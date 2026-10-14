@@ -1,0 +1,235 @@
+{
+  "info": {
+    "name": "LUVI Fideliza+ 0.2 — acessos locais",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "csrf",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": ""
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "owner_email",
+      "value": ""
+    },
+    {
+      "key": "owner_name",
+      "value": "Proprietário piloto"
+    },
+    {
+      "key": "owner_password",
+      "value": ""
+    },
+    {
+      "key": "estabelecimento_id",
+      "value": ""
+    },
+    {
+      "key": "convite_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 CSRF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/csrf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) pm.collectionVariables.set('csrf', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Login administrador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "{{admin_email}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_password}}",
+              "type": "text"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 Meu acesso",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/me"
+      }
+    },
+    {
+      "name": "04 Cadastrar estabelecimento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/estabelecimentos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Barbearia Piloto\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('estabelecimento_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Convidar proprietário",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/estabelecimentos/{{estabelecimento_id}}/convites",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{owner_email}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('convite_token', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/logout"
+      }
+    },
+    {
+      "name": "07 Aceitar convite",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/convites/aceitar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{convite_token}}\",\n  \"nome\": \"{{owner_name}}\",\n  \"senha\": \"{{owner_password}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "08 Login proprietário",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "{{owner_email}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{owner_password}}",
+              "type": "text"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "09 Consultar estabelecimento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}"
+      }
+    }
+  ]
+}
