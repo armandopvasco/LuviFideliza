@@ -1,4 +1,15 @@
-# LUVI Fideliza+ — backend 0.2
+# LUVI Fideliza+ — entrega 0.3
+
+Nova funcionalidade: programa de fidelidade com meta, recompensa, critérios da
+compra e histórico de versões. Somente o proprietário altera as regras.
+
+**Se você já validou a versão 0.2, comece por docs/TESTAR_0.3.md.**
+Use os mesmos usuários e estabelecimentos. Não recrie administrador ou convites.
+V1 e V2 foram preservadas; somente V3 foi adicionada.
+
+## Configuração completa e fluxo inicial
+
+# LUVI Fideliza+ — backend 0.3
 
 Java 17, Spring Boot 3.5.6, PostgreSQL, Maven e Flyway.
 Esta entrega acrescenta login por sessão, bootstrap local do administrador,
@@ -10,7 +21,7 @@ Ainda não tem telas, carteiras, carimbos, cobrança, e-mail ou app Flutter.
 2. Extraia este ZIP em uma nova pasta e abra o pom.xml no IntelliJ.
 3. Mantenha o mesmo banco luvi_fideliza e copie apenas suas variáveis de ambiente.
 4. Não apague tabelas nem altere V1. V1 é idêntica à primeira entrega.
-   Flyway executará somente V2, que cria convite_proprietario.
+   Flyway executará as migrações pendentes até V3 (convites e programa versionado).
 5. Recarregue o Maven. Esta versão já inclui as correções para Spring Boot 3.5.6.
 
 ## Primeiro administrador local
@@ -35,8 +46,9 @@ manual do convite; verificação por e-mail, recuperação, limitação de tenta
 e auditoria completa devem ser implementadas antes de acesso público.
 
 ## Testar pelo Postman
-Importe docs/LUVI_Fideliza_0.2.postman_collection.json.
+Importe docs/LUVI_Fideliza_0.3.postman_collection.json.
 O Postman deve preservar os cookies de localhost (JSESSIONID).
+A coleção 0.3 renova o CSRF automaticamente antes das gravações. Não é necessário copiar tokens.
 As variáveis da coleção não contêm credenciais reais. Preencha admin_email e
 admin_password localmente. Nunca publique a coleção preenchida com segredos.
 
