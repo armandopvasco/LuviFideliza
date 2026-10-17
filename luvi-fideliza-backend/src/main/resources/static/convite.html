@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>LUVI Fideliza+ · Meus benefícios</title>
+<link rel="stylesheet" href="/painel.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#faf7f3;color:#243c50;font:16px system-ui,sans-serif}header{padding:24px;background:#f8dfcf}main{max-width:820px;margin:auto;padding:20px}section,article{background:white;border:1px solid #ddd;border-radius:16px;padding:22px;margin:16px 0}label{display:block;margin:14px 0}input,button{font:inherit;padding:12px;border:1px solid #aaa;border-radius:8px}input{display:block;width:100%;margin-top:6px}button{cursor:pointer;background:#243c50;color:white;margin:4px 6px 4px 0}button:disabled{opacity:.5;cursor:wait}#aviso{padding:16px;background:#e5f0e5;border-radius:8px;white-space:pre-wrap}.erro{background:#fce0dc!important}small{display:block}article{white-space:pre-wrap}h1{margin:0;font-size:24px}[hidden]{display:none!important}
+</style>
+<style>
+body{background:#f8f7f4;color:#2d3937;font-family:"Segoe UI",system-ui,sans-serif;font-size:14px}header{padding:26px 30px;background:#fffdf9;border-bottom:1px solid #e5e7e1;color:#a34f53}header h1{font-size:27px;letter-spacing:1px;font-weight:650}header>span{display:block;font-size:11px;color:#929987;margin-top:6px}main{max-width:780px;padding:24px 18px}section{border:1px solid #e5e7e1;border-radius:13px;padding:25px;margin:20px 0}h2{font-size:23px;margin:0 0 15px}h3{margin:18px 0 12px}p{line-height:1.8}button{background:#a34f53;border:0;padding:12px 18px;color:white;font-size:13px;font-weight:600;border-radius:9px}input{border-color:#d9dfd7;padding:11px 13px}label{font-size:12px}small{color:#929987;font-size:11px}summary{color:#a34f53;cursor:pointer;margin-top:23px;font-size:13px}details{padding-top:5px}#aviso{position:sticky;top:12px;z-index:10;background:#eaf0e4;border:1px solid #d8e2cf;box-shadow:0 5px 20px #2937290c;font-size:13px}#cartoes article{background:linear-gradient(120deg,#f4eee3,#f0f2e9);white-space:normal;border:1px solid #e8e6d7;border-radius:12px;padding:23px;margin:14px 0}#cartoes article h3{color:#68795c;font-size:22px;margin:12px 0}#cartoes article p{color:#879277;font-size:12px}#recompensas article{background:#fffdf8;border:1px solid #e5e7e1;padding:20px;font-size:13px}.wallet-meta{display:flex;justify-content:space-between;font-size:10px;color:#90997f}.wallet-track{height:6px;background:#dce2d2;border-radius:9px;overflow:hidden;margin:20px 0 9px}.wallet-track>span{display:block;height:100%;background:#99ab84}.wallet-note{font-size:11px;color:#909780}.panel-link{display:inline-block;margin:18px 0;font-weight:600}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>LUVI Fideliza+</h1><span>Seus cartões e recompensas</span></header>
+<main>
+<p id="aviso" role="status" hidden></p>
+<section id="acesso" hidden>
+<h2 id="acesso-titulo">Seus benefícios, mais perto.</h2>
+<p>Entre ou crie sua conta antes de aceitar o convite do estabelecimento.</p>
+<form id="login"><label>E-mail <input id="email" type="email" autocomplete="username" required maxlength="180"></label><label>Senha <input id="senha" type="password" autocomplete="current-password" required></label><button>Entrar</button></form>
+<details><summary>Ainda não tenho conta</summary>
+<form id="cadastro"><label>Nome <input id="novoNome" required maxlength="120" autocomplete="name"></label><label>E-mail <input id="novoEmail" type="email" required maxlength="180" autocomplete="email"></label><label>Senha <input id="novaSenha" type="password" minlength="12" maxlength="72" required autocomplete="new-password"></label><small>Use de 12 a 72 caracteres, sem acentos ou emojis nesta fase de testes.</small><button>Criar conta e entrar</button></form>
+</details>
+</section>
+<section id="sessao" hidden><p id="identidade"></p><p id="equipe" hidden>Esta conta tem acesso à equipe ou à administração. Confira se deseja vincular o cartão a ela. Para usar outra conta de cliente, clique em Sair.</p><button id="sair" type="button">Sair</button></section>
+<section id="vinculo" hidden><h2 id="vinculo-titulo">Vincular meu cartão</h2><p id="vinculo-descricao">Ao aceitar, o participante indicado por este convite será vinculado à conta exibida acima.</p><button id="aceitar" type="button">Aceitar convite com esta conta</button></section>
+<section id="equipe-confirmada" hidden><h2>Você faz parte do time!</h2><p id="equipe-negocio"></p><a class="panel-link" href="/painel.html">Abrir painel do estabelecimento →</a></section>
+<section id="beneficios" hidden><h2>Meus benefícios</h2><button id="atualizar" type="button">Atualizar</button><h3>Cartões</h3><div id="cartoes"></div><h3>Recompensas</h3><div id="recompensas"></div><p>As compras e os resgates são registrados pela equipe do estabelecimento.</p></section>
+<p>Protótipo para testes locais. No celular, localhost aponta para o próprio aparelho; use este link no computador da aplicação por enquanto.</p>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let token = new URLSearchParams(location.hash.slice(1)).get("token") || "";
+const tipoEquipe = new URLSearchParams(location.hash.slice(1)).get("tipo") === "equipe";
+if(tipoEquipe){$("acesso-titulo").textContent="Um convite para fazer parte do time.";$("vinculo-titulo").textContent="Entrar na equipe";$("vinculo-descricao").textContent="Entre ou cadastre-se com o mesmo e-mail para o qual o proprietário emitiu o convite. Ao aceitar, você terá acesso como funcionário do estabelecimento.";}
+let conta = null, ocupado = false;
+function aviso(texto, erro=false) { $("aviso").textContent=texto; $("aviso").className=erro?"erro":""; $("aviso").hidden=!texto; }
+function sincronizar() {
+  $("acesso").hidden=!!conta; $("sessao").hidden=!conta; $("beneficios").hidden=!conta||tipoEquipe; $("vinculo").hidden=!conta||!token;
+  if(!conta)$("equipe-confirmada").hidden=true;
+  document.querySelectorAll("button,input").forEach(c=>c.disabled=ocupado);
+  $("identidade").textContent=conta?"Conta conectada: "+conta.email:"";
+  $("equipe").hidden=tipoEquipe||!conta?.perfis?.some(p=>p==="ROLE_ADMIN"||p==="ROLE_OPERADOR");
+}
+async function executar(acao) { if(ocupado)return; ocupado=true; sincronizar(); try { await acao(); } catch(e) { aviso(e.message,true); } finally { ocupado=false; sincronizar(); } }
+async function api(url, op={}) {
+  const metodo=op.method||"GET", headers=new Headers(op.headers||{});
+  if(!["GET","HEAD","OPTIONS"].includes(metodo)) {
+    const resposta=await fetch("/api/v1/auth/csrf",{credentials:"same-origin",cache:"no-store"});
+    if(!resposta.ok)throw new Error("Não foi possível preparar a operação. Atualize a página.");
+    const csrf=await resposta.json(); headers.set(csrf.headerName,csrf.token);
+  }
+  const resposta=await fetch(url,{...op,headers,credentials:"same-origin",cache:"no-store"});
+  const texto=await resposta.text(); let dados=null; try{dados=texto?JSON.parse(texto):null;}catch{}
+  if(!resposta.ok) {
+    if(resposta.status===401){conta=null;$("cartoes").replaceChildren();$("recompensas").replaceChildren();}
+    const erro=new Error(dados?.mensagem || (resposta.status===401?"Entre na sua conta para continuar.":"Não foi possível concluir. Código "+resposta.status+"."));
+    erro.status=resposta.status; throw erro;
+  }
+  return dados;
+}
+const post=dados=>({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(dados)});
+function exibir(id,lista,formatar,vazio) {
+  $(id).replaceChildren();
+  if(!lista.length){$(id).textContent=vazio;return;}
+  lista.forEach(item=>{const artigo=document.createElement("article");artigo.textContent=formatar(item);$(id).append(artigo);});
+}
+async function carregar() {
+  if(tipoEquipe)return;
+  const cartoes=await api("/api/v1/me/cartoes?tamanho=100");
+  exibir("cartoes",cartoes.conteudo,c=>c.estabelecimento+" · "+c.titulo+"\nCiclo "+c.ciclo+" · "+c.status+"\n"+c.saldo+" / "+c.metaCarimbos+" carimbos\nRecompensa: "+c.recompensa+"\nRegra: "+c.criteriosCompra,"Você ainda não tem cartões vinculados.");
+  [...$("cartoes").querySelectorAll("article")].forEach((artigo,i)=>{
+    const c=cartoes.conteudo[i];artigo.replaceChildren();
+    const criar=(tag,conteudo,classe)=>{const e=document.createElement(tag);e.textContent=conteudo;if(classe)e.className=classe;return e;};
+    artigo.append(criar("div",c.estabelecimento+" · Ciclo "+c.ciclo,"wallet-meta"),criar("h3",c.titulo),criar("p",c.recompensa));
+    const barra=criar("div","","wallet-track"),progresso=criar("span","");progresso.style.width=Math.min(100,c.saldo/c.metaCarimbos*100)+"%";barra.append(progresso);artigo.append(barra,criar("p",c.saldo+" / "+c.metaCarimbos+" carimbos · "+(c.status==="CONCLUIDO"?"Recompensa conquistada ♡":"Em andamento")),criar("small",c.criteriosCompra+" · Regras da versão "+c.versao));
+  });
+  if(cartoes.total>100)$("cartoes").append(document.createTextNode("Exibindo os primeiros 100 cartões neste protótipo."));
+  try {
+    const recompensas=await api("/api/v1/me/recompensas?tamanho=100");
+    exibir("recompensas",recompensas.conteudo,r=>r.descricao+"\nCiclo "+r.ciclo+" · "+r.status+(r.resgatadaEm?"\nResgatada em "+new Date(r.resgatadaEm).toLocaleString("pt-BR"):""),"Nenhuma recompensa emitida ainda.");
+    if(recompensas.total>100)$("recompensas").append(document.createTextNode("Exibindo as primeiras 100 recompensas neste protótipo."));
+  }catch(e){if(e.status!==404)throw e;$("recompensas").textContent="O módulo de recompensas não está disponível nesta versão do servidor.";}
+}
+async function entrar(email,senha) {
+  await api("/api/v1/auth/login",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({email,password:senha})});
+  $("senha").value="";$("novaSenha").value="";
+  conta=await api("/api/v1/auth/me"); sincronizar(); await carregar(); aviso(token?"Confira a conta acima e aceite o convite.":"Benefícios atualizados.");
+}
+$("login").onsubmit=e=>{e.preventDefault();executar(()=>entrar($("email").value.trim(),$("senha").value));};
+$("cadastro").onsubmit=e=>{
+  e.preventDefault();executar(async()=>{
+    const email=$("novoEmail").value.trim(), senha=$("novaSenha").value;
+    if(senha.length<12||senha.length>72||!/^[\x20-\x7e]+$/.test(senha))throw new Error("Use de 12 a 72 caracteres sem acentos ou emojis na senha.");
+    await api("/api/v1/auth/clientes",post({nome:$("novoNome").value.trim(),email,senha}));
+    $("email").value=email; $("novoNome").value=""; $("novoEmail").value=""; $("novaSenha").value="";
+    try{await entrar(email,senha);}catch(e){throw new Error("Conta criada. Entre com seu e-mail e senha. "+e.message);}
+  });
+};
+$("aceitar").onclick=()=>executar(async()=>{
+  if(!token||!conta)return;
+  if(!confirm((tipoEquipe?"Aceitar o acesso à equipe com a conta ":"Vincular o participante deste convite à conta ")+conta.email+"?"))return;
+  const resultado=await api(tipoEquipe?"/api/v1/me/equipe/aceitar":"/api/v1/me/participacoes/aceitar",post({token}));
+  token="";history.replaceState(null,"",location.pathname+location.search);sincronizar();
+  if(tipoEquipe){$("equipe-confirmada").hidden=false;$("equipe-negocio").textContent="Seu acesso a "+resultado.estabelecimento+" foi confirmado. Abra o painel para começar.";aviso("Convite aceito! Seu acesso como funcionário está pronto.");return;}
+  aviso("Convite aceito! Seu cartão está vinculado à sua conta.");
+  try{await carregar();}catch(e){throw new Error("Vínculo confirmado. Clique em Atualizar para consultar os benefícios. "+e.message);}
+});
+$("sair").onclick=()=>executar(async()=>{await api("/api/v1/auth/logout",{method:"POST"});conta=null;$("cartoes").replaceChildren();$("recompensas").replaceChildren();aviso("Você saiu. Entre com a conta desejada.");});
+$("atualizar").onclick=()=>executar(async()=>{await carregar();aviso("Benefícios atualizados.");});
+executar(async()=>{try{conta=await api("/api/v1/auth/me");await carregar();}catch(e){if(e.status!==401)throw e;}if(token)aviso(tipoEquipe?"Convite de funcionário recebido. Entre com o e-mail convidado e confirme o acesso.":"Convite recebido. Entre na conta de cliente e confirme o vínculo.");});
+</script>
+</body>
+</html>

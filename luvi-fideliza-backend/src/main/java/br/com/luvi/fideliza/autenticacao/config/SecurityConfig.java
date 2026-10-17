@@ -1,5 +1,6 @@
 package br.com.luvi.fideliza.autenticacao.config;
 
+import br.com.luvi.fideliza.equipe.MembroRepository;
 import br.com.luvi.fideliza.usuario.UsuarioRepository;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,7 +19,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  UserDetailsService users(UsuarioRepository usuarios) {
+  UserDetailsService users(UsuarioRepository usuarios, MembroRepository membros) {
     return email ->
         usuarios
             .findByEmailIgnoreCase(email.trim())
@@ -27,7 +28,12 @@ public class SecurityConfig {
                     User.withUsername(u.getEmail())
                         .password(u.getSenhaHash())
                         .disabled(!u.getAtivo())
-                        .roles(u.getAdministradorPlataforma() ? "ADMIN" : "OPERADOR")
+                        .roles(
+                            u.getAdministradorPlataforma()
+                                ? "ADMIN"
+                                : membros.existsByUsuarioIdAndAtivoTrue(u.getId())
+                                    ? "OPERADOR"
+                                    : "CLIENTE")
                         .build())
             .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
   }
@@ -37,7 +43,15 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
             a ->
                 a.requestMatchers(
-                        "/actuator/health", "/api/v1/auth/csrf", "/api/v1/auth/convites/aceitar")
+                        "/painel.html",
+                        "/painel.css",
+                        "/painel.js",
+                        "/painel-funcoes.js",
+                        "/convite.html",
+                        "/actuator/health",
+                        "/api/v1/auth/csrf",
+                        "/api/v1/auth/convites/aceitar",
+                        "/api/v1/auth/clientes")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
                     .hasRole("ADMIN")

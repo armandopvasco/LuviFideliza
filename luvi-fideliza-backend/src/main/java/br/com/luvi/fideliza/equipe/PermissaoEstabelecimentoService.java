@@ -36,6 +36,16 @@ public class PermissaoEstabelecimentoService {
     return usuario;
   }
 
+  public Usuario exigirOperacao(UUID estabelecimentoId, String email) {
+    Usuario usuario = usuarioAtivo(email);
+    if (!membros.existsByUsuarioIdAndEstabelecimentoIdAndAtivoTrue(
+        usuario.getId(), estabelecimentoId)) {
+      throw new AccessDeniedException(
+          "Somente a equipe do estabelecimento pode registrar operações");
+    }
+    return usuario;
+  }
+
   private Usuario usuarioAtivo(String email) {
     return usuarios
         .findByEmailIgnoreCase(email)

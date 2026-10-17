@@ -50,4 +50,8 @@ public class MembroEstabelecimento {
   public boolean getAtivo() {
     return ativo;
   }
+
+  public void alterarAtivo(boolean ativo) {
+    this.ativo = ativo;
+  }
 }

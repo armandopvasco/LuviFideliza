@@ -1,0 +1,922 @@
+{
+  "info": {
+    "name": "LUVI Fideliza+ 0.4 — participantes e carimbos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "csrf",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": ""
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "owner_email",
+      "value": ""
+    },
+    {
+      "key": "owner_name",
+      "value": "Proprietário piloto"
+    },
+    {
+      "key": "owner_password",
+      "value": ""
+    },
+    {
+      "key": "estabelecimento_id",
+      "value": ""
+    },
+    {
+      "key": "convite_token",
+      "value": ""
+    },
+    {
+      "key": "programa_versao",
+      "value": "1"
+    },
+    {
+      "key": "participante_id",
+      "value": ""
+    },
+    {
+      "key": "cartao_id",
+      "value": ""
+    },
+    {
+      "key": "cadastro_chave",
+      "value": ""
+    },
+    {
+      "key": "carimbo_chave",
+      "value": ""
+    },
+    {
+      "key": "nova_compra_chave",
+      "value": ""
+    },
+    {
+      "key": "convite_cliente",
+      "value": ""
+    },
+    {
+      "key": "cliente_nome",
+      "value": "Cliente Piloto"
+    },
+    {
+      "key": "cliente_email",
+      "value": ""
+    },
+    {
+      "key": "cliente_password",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 CSRF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/csrf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) pm.collectionVariables.set('csrf', pm.response.json().token);",
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Login administrador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "{{admin_email}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_password}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Meu acesso",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Cadastrar estabelecimento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/estabelecimentos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Barbearia Piloto\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('estabelecimento_id', pm.response.json().id);",
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Convidar proprietário",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/admin/estabelecimentos/{{estabelecimento_id}}/convites",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{owner_email}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('convite_token', pm.response.json().token);",
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/logout"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Aceitar convite",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/convites/aceitar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{convite_token}}\",\n  \"nome\": \"{{owner_name}}\",\n  \"senha\": \"{{owner_password}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Login proprietário",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "{{owner_email}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{owner_password}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Consultar estabelecimento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Criar programa — proprietário",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Cortes premiados\",\n  \"metaCarimbos\": 10,\n  \"recompensa\": \"Um corte grátis\",\n  \"criteriosCompra\": \"Um carimbo por corte pago. Produtos não participam.\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if ([200, 201].includes(pm.response.code)) pm.collectionVariables.set('programa_versao', String(pm.response.json().versao));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Consultar programa atual",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if ([200, 201].includes(pm.response.code)) pm.collectionVariables.set('programa_versao', String(pm.response.json().versao));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Atualizar regras — proprietário",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"versaoAtual\": {{programa_versao}},\n  \"titulo\": \"Cortes premiados\",\n  \"metaCarimbos\": 8,\n  \"recompensa\": \"Um corte grátis\",\n  \"criteriosCompra\": \"Um carimbo por corte pago. Produtos não participam.\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if ([200, 201].includes(pm.response.code)) pm.collectionVariables.set('programa_versao', String(pm.response.json().versao));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Histórico das regras",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa/historico"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Tentar criar outro programa — espera 409",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Cortes premiados\",\n  \"metaCarimbos\": 10,\n  \"recompensa\": \"Um corte grátis\",\n  \"criteriosCompra\": \"Um carimbo por corte pago. Produtos não participam.\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Tentar salvar versão antiga — espera 409",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/programa",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"versaoAtual\": 1,\n  \"titulo\": \"Cortes premiados\",\n  \"metaCarimbos\": 5,\n  \"recompensa\": \"Um corte grátis\",\n  \"criteriosCompra\": \"Um carimbo por corte pago. Produtos não participam.\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Cadastrar participante e abrir cartão",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{cadastro_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nomeExibicao\": \"Cliente Piloto\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) { const dados = pm.response.json(); pm.collectionVariables.set('participante_id', dados.participante.id); pm.collectionVariables.set('cartao_id', dados.cartao.id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 Repetir cadastro — não duplica",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{cadastro_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nomeExibicao\": \"Cliente Piloto\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 Consultar cartões do participante",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/cartoes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 Registrar primeiro carimbo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{carimbo_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/carimbos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"referenciaCompra\": \"COMPRA-PILOTO-001\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 Repetir primeiro carimbo — não duplica",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{carimbo_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/carimbos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"referenciaCompra\": \"COMPRA-PILOTO-001\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 Registrar outra compra",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{nova_compra_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/carimbos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"referenciaCompra\": \"COMPRA-PILOTO-002\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 Histórico de carimbos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/carimbos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 Gerar convite para vincular a conta",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/convite"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.collectionVariables.set('convite_cliente', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 Sair do proprietário",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/logout"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 Cadastrar conta do cliente — primeira vez",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/auth/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{cliente_nome}}\",\n  \"email\": \"{{cliente_email}}\",\n  \"senha\": \"{{cliente_password}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 Login cliente",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{base_url}}/api/v1/auth/login",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "{{cliente_email}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{cliente_password}}",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 Aceitar convite do estabelecimento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/me/participacoes/aceitar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{convite_cliente}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 Minha carteira — cliente",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/me/cartoes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 Cliente não pode registrar carimbo — espera 403",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{carimbo_chave}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes/{{participante_id}}/carimbos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"referenciaCompra\": \"COMPRA-NEGADA\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 Listar participantes — somente equipe",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/estabelecimentos/{{estabelecimento_id}}/participantes"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Uma chave por operação, mantida na coleção para retries seguros.",
+          "['cadastro_chave','carimbo_chave','nova_compra_chave'].forEach(function (nome) {",
+          "  if (!pm.collectionVariables.get(nome)) pm.collectionVariables.set(nome, pm.variables.replaceIn('{{$guid}}'));",
+          "});",
+          "// Atualiza o CSRF antes de gravações, mantendo o cookie da sessão.",
+          "if (!['GET', 'HEAD', 'OPTIONS'].includes(pm.request.method)) {",
+          "  const base = pm.variables.replaceIn('{{base_url}}');",
+          "  pm.sendRequest({url: base + '/api/v1/auth/csrf', method: 'GET'}, function (error, resposta) {",
+          "    if (error || resposta.code !== 200) throw new Error('Não foi possível obter CSRF. Confira a aplicação e os cookies.');",
+          "    const csrf = resposta.json();",
+          "    pm.collectionVariables.set('csrf', csrf.token);",
+          "    pm.request.headers.upsert({key: csrf.headerName, value: csrf.token});",
+          "  });",
+          "}"
+        ]
+      }
+    }
+  ]
+}
