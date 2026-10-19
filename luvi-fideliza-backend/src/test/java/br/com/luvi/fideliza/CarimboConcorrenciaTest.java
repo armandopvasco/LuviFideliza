@@ -64,7 +64,7 @@ class CarimboConcorrenciaTest {
 
   private UUID participante() {
     return service
-        .cadastrar(negocio, UUID.randomUUID(), "Cliente", dono)
+        .cadastrar(negocio, UUID.randomUUID(), "Cliente", "81999990006", dono)
         .dados()
         .participante()
         .id();
@@ -99,7 +99,7 @@ class CarimboConcorrenciaTest {
     UUID chave = UUID.randomUUID();
     var resultados =
         simultaneo(
-            () -> service.cadastrar(negocio, chave, "Cliente", dono).dados().participante().id());
+            () -> service.cadastrar(negocio, chave, "Cliente", "81999990002", dono).dados().participante().id());
     assertEquals(resultados.get(0), resultados.get(1));
     assertEquals(1, service.participantes(negocio, 0, 20, dono).total());
   }

@@ -30,6 +30,9 @@ public class Participacao {
   @Column(name = "nome_exibicao", nullable = false, length = 120, updatable = false)
   private String nomeExibicao;
 
+  @Column(name = "whatsapp", length = 13)
+  private String whatsapp;
+
   @Column(name = "chave_cadastro", nullable = false, updatable = false)
   private UUID chaveCadastro;
 
@@ -89,6 +92,10 @@ public class Participacao {
   public String getNomeExibicao() {
     return nomeExibicao;
   }
+
+  public String getWhatsapp() { return whatsapp; }
+
+  public void definirWhatsapp(String numero) { this.whatsapp = numero; }
 
   public UUID getChaveCadastro() {
     return chaveCadastro;

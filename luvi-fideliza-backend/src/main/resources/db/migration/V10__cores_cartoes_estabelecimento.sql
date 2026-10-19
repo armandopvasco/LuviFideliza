@@ -1,0 +1,2 @@
+ALTER TABLE estabelecimento ADD COLUMN cor_cartao VARCHAR(7) NOT NULL DEFAULT '#30475A';
+ALTER TABLE estabelecimento ADD COLUMN cor_carimbo VARCHAR(7) NOT NULL DEFAULT '#87A18F';

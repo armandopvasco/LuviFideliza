@@ -84,7 +84,7 @@ class CartaoIntegrationTest {
 
   private Cadastro cadastro() {
     return service
-        .cadastrar(negocio, UUID.randomUUID(), "Cliente piloto", "dono@teste.local")
+        .cadastrar(negocio, UUID.randomUUID(), "Cliente piloto", "81999990004", "dono@teste.local")
         .dados();
   }
 
@@ -95,8 +95,8 @@ class CartaoIntegrationTest {
   @Test
   void cadastroTemCartaoZeroERepeticaoNaoDuplica() {
     UUID chave = UUID.randomUUID();
-    var primeiro = service.cadastrar(negocio, chave, "Cliente piloto", "dono@teste.local");
-    var repetido = service.cadastrar(negocio, chave, " Cliente piloto ", "dono@teste.local");
+    var primeiro = service.cadastrar(negocio, chave, "Cliente piloto", "81999990001", "dono@teste.local");
+    var repetido = service.cadastrar(negocio, chave, " Cliente piloto ", "81999990001", "dono@teste.local");
     assertFalse(primeiro.repetido());
     assertTrue(repetido.repetido());
     assertEquals(primeiro.dados().participante().id(), repetido.dados().participante().id());
@@ -104,7 +104,7 @@ class CartaoIntegrationTest {
     assertEquals(1, service.participantes(negocio, 0, 20, "dono@teste.local").total());
     assertThrows(
         ResponseStatusException.class,
-        () -> service.cadastrar(negocio, chave, "Outro nome", "dono@teste.local"));
+        () -> service.cadastrar(negocio, chave, "Outro nome", "81999990001", "dono@teste.local"));
   }
 
   @Test
@@ -188,7 +188,7 @@ class CartaoIntegrationTest {
         service.convidar(negocio, p, "dono@teste.local").token(), "cliente@teste.local");
     UUID p2 =
         service
-            .cadastrar(outro, UUID.randomUUID(), "Mesmo cliente", "outrodono@teste.local")
+            .cadastrar(outro, UUID.randomUUID(), "Mesmo cliente", "81999990005", "outrodono@teste.local")
             .dados()
             .participante()
             .id();
@@ -265,7 +265,7 @@ class CartaoIntegrationTest {
                   .with(csrf())
                   .header("Idempotency-Key", chave)
                   .contentType("application/json")
-                  .content("{\"nomeExibicao\":\"Teste API\"}"))
+                  .content("{\"nomeExibicao\":\"Teste API\",\"whatsapp\":\"81999990003\"}"))
           .andExpect(status().is(codigo));
     UUID p = cadastro().participante().id();
     chave = UUID.randomUUID();
@@ -288,7 +288,7 @@ class CartaoIntegrationTest {
                 .with(user("dono@teste.local"))
                 .with(csrf())
                 .contentType("application/json")
-                .content("{\"nomeExibicao\":\"Teste\"}"))
+                .content("{\"nomeExibicao\":\"Teste\",\"whatsapp\":\"81999990003\"}"))
         .andExpect(status().isBadRequest());
     mvc.perform(
             post(url(negocio))
@@ -296,7 +296,7 @@ class CartaoIntegrationTest {
                 .with(csrf())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType("application/json")
-                .content("{\"nomeExibicao\":\" \"}"))
+                .content("{\"nomeExibicao\":\" \",\"whatsapp\":\"81999990003\"}"))
         .andExpect(status().isBadRequest());
     mvc.perform(get(url(negocio) + "?tamanho=1000").with(user("dono@teste.local")))
         .andExpect(status().isBadRequest());
@@ -305,7 +305,7 @@ class CartaoIntegrationTest {
                 .with(user("dono@teste.local"))
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType("application/json")
-                .content("{\"nomeExibicao\":\"Teste\"}"))
+                .content("{\"nomeExibicao\":\"Teste\",\"whatsapp\":\"81999990003\"}"))
         .andExpect(status().isForbidden());
   }
 

@@ -55,7 +55,8 @@ public class RecompensaService {
             String descricao,
             String status,
             Instant emitidaEm,
-            Instant resgatadaEm) {
+            Instant resgatadaEm,
+            String entreguePor) {
     }
 
     // A emissão participa da mesma transação do carimbo.
@@ -225,6 +226,9 @@ public class RecompensaService {
                 recompensa.getResgatadaEm() == null
                         ? "DISPONIVEL" : "RESGATADA",
                 recompensa.getEmitidaEm(),
-                recompensa.getResgatadaEm());
+                recompensa.getResgatadaEm(),
+                recompensa.getResgatadaPor() == null ? null :
+                    usuarios.findById(recompensa.getResgatadaPor())
+                        .map(Usuario::getNome).orElse("Usuário não encontrado"));
     }
 }

@@ -77,6 +77,8 @@ public class Recompensa {
         return emitidaEm;
     }
 
+    public UUID getResgatadaPor() { return resgatadaPor; }
+
     public Instant getResgatadaEm() {
         return resgatadaEm;
     }

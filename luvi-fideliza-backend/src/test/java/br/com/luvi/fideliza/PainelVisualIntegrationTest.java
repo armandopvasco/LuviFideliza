@@ -200,7 +200,7 @@ class PainelVisualIntegrationTest {
                     .with(csrf())
                     .header("Idempotency-Key", UUID.randomUUID())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"nomeExibicao\":\"Ana 100%\"}"))
+                    .content("{\"nomeExibicao\":\"Ana 100%\",\"whatsapp\":\"81999990003\"}"))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()

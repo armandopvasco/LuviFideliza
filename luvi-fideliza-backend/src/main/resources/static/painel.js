@@ -1,3 +1,19 @@
+// UUID v4 para chaves de idempotência, inclusive em HTTP na rede local.
+function gerarUUIDSeguro() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('Identificador seguro indisponível. Acesse o painel por HTTPS.');
+  }
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+
 /* LUVI Fideliza+ — painel local integrado. Sem dependências externas. */
 (() => {
   "use strict";
@@ -67,7 +83,7 @@
   }
   function pendente(tipo, dados, id) {
     const anterior = lerPendente(tipo, id); if (anterior) return anterior;
-    const operacao = { chave: crypto.randomUUID(), dados };
+    const operacao = { chave: gerarUUIDSeguro(), dados };
     sessionStorage.setItem(chavePendente(tipo, id), JSON.stringify(operacao)); return operacao;
   }
   function concluirPendente(tipo, id) {
@@ -80,7 +96,7 @@
     todos("button,input,select,textarea").forEach(e => e.disabled = state.busy);
     $("busy").hidden = !state.busy;
     $("nav-equipe").hidden = !dono();
-    for (const id of ["novo-cliente", "nome-cliente", "cadastrar-cliente", "referencia", "carimbar"]) $(id).disabled = state.busy || !operar();
+    for (const id of ["novo-cliente", "nome-cliente", "cadastrar-cliente", "carimbar"]) $(id).disabled = state.busy || !operar();
     $("form-carimbo").hidden = !operar();
     $("gerar-convite").disabled = state.busy || !operar() || !state.pessoa || state.pessoa.vinculadoAoCliente;
     todos("[data-resgatar]").forEach(b => b.disabled = state.busy || !operar());
@@ -108,9 +124,11 @@
     if (view === "equipe" && !dono()) return;
     state.view = view; limparAvisos();
     todos("[data-page]").forEach(e => e.hidden = e.dataset.page !== view);
-    todos("[data-view]").forEach(b => { b.classList.toggle("active", b.dataset.view === view); if (b.dataset.view === view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    todos("[data-view]").forEach(b => { const ativo = b.dataset.view === view || (["clientes", "recompensas"].includes(view) && b.dataset.view === "atendimento") || (view === "programa" && b.dataset.view === "inicio"); b.classList.toggle("active", ativo); if (ativo) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     if (!state.negocio) return;
+    if (view === "campanhas") { const frame=$("campanhas-frame"); const url="/campanhas.html?embedded=1&estabelecimento="+encodeURIComponent(state.negocio.id || $("estabelecimento").value); if(frame.getAttribute("src")!==url)frame.setAttribute("src",url); }
     if (view === "inicio") await carregarInicio();
+    if (view === "atendimento") { /* Ações rápidas utilizam os fluxos existentes. */ }
     if (view === "clientes") await carregarClientes();
     if (view === "recompensas") await carregarRecompensas();
     if (view === "programa" && state.programa === undefined) await carregarPrograma();
@@ -120,6 +138,7 @@
     state.conta = await api("/api/v1/auth/me");
     state.negocios = await api("/api/v1/painel/estabelecimentos");
     $("conta").textContent = state.conta.email;
+    $("link-admin").hidden = !state.conta.perfis.includes("ROLE_ADMIN");
     $("estabelecimento").replaceChildren(...state.negocios.map(n => new Option(n.nome, n.id)));
     $("login").hidden = true; $("app").hidden = false;
     await trocarNegocio();
@@ -135,7 +154,7 @@
     $("sem-negocio").hidden = !!state.negocio; $("views").hidden = !state.negocio;
     if (state.negocio) state.direitos = await api(painel() + "/permissoes");
     $("perfil").textContent = dono() ? "Proprietário" : operar() ? "Funcionário" : state.conta.perfis.includes("ROLE_ADMIN") ? "Administração · consulta" : "Conta sem vínculo";
-    await navegar("inicio");
+    await navegar(operar() ? "atendimento" : "inicio");
   }
   async function programaAtual() { try { return await api(raiz() + "/programa"); } catch (e) { if (e.status === 404) return null; throw e; } }
   async function carregarInicio() {
@@ -155,7 +174,7 @@
     const dados = await api(raiz() + "/participantes?" + parametros("clientes") + "&busca=" + encodeURIComponent(state.busca));
     state.clientes = dados.conteudo;
     $("lista-clientes").replaceChildren(); $("total-clientes").textContent = dados.total; paginar("clientes", dados);
-    if (!dados.conteudo.length) vazio("lista-clientes", state.busca ? "Nenhum cliente encontrado com esse nome." : "Seu primeiro vínculo começa aqui. Cadastre um cliente para abrir o cartão.");
+    if (!dados.conteudo.length) vazio("lista-clientes", state.busca ? "Nenhum cliente encontrado com esse nome ou WhatsApp." : "Seu primeiro vínculo começa aqui. Cadastre um cliente para abrir o cartão.");
     dados.conteudo.forEach(p => {
       if (state.pessoa?.id === p.id) state.pessoa = p;
       const b = texto("button", "", "client-row" + (p.id === state.pessoa?.id ? " active" : ""));
@@ -171,16 +190,31 @@
     $("cliente-avatar").textContent = iniciais(state.pessoa.nomeExibicao);
     $("cliente-vinculo").textContent = state.pessoa.vinculadoAoCliente ? "Conta vinculada" : "Ainda sem conta vinculada";
   }
-  function restaurarCarimbo() {
-    const op = lerPendente("carimbo", state.pessoa.id);
-    $("referencia").value = op?.dados.referenciaCompra || ""; $("referencia").readOnly = !!op;
-    $("carimbar").textContent = op ? "Reenviar carimbo" : "+ Carimbo";
-    $("carimbo-ajuda").textContent = op ? "Há uma compra sem confirmação. Reenvie os mesmos dados para evitar duplicidade." : "Cada compra válida adiciona um carimbo ao cartão.";
+  async function restaurarCarimbo() {
+    const area = $("campanhas-atendimento");
+    area.replaceChildren();
+    const op = lerPendente("atendimento", state.pessoa.id);
+    const campanhas = await api(raiz() + "/campanhas");
+    const ativas = campanhas.filter(c => c.ativa);
+    ativas.forEach(c => {
+      const linha = texto("label", "", "campanha-opcao");
+      const check = document.createElement("input");
+      check.type = "checkbox"; check.value = c.id;
+      check.checked = op ? op.dados.campanhas.includes(c.id) : false;
+      check.disabled = !!op || state.busy;
+      linha.append(check, texto("span", c.titulo + " — " + c.metaCarimbos + " carimbos"));
+      area.append(linha);
+    });
+    $("carimbar").textContent = op ? "Reenviar atendimento" : "Registrar carimbos selecionados";
+    $("carimbo-ajuda").textContent = op
+      ? "Atendimento pendente de confirmação. Reenvie sem alterar as campanhas."
+      : "Cada campanha selecionada recebe 1 carimbo. É permitido atender o mesmo cliente mais de uma vez no dia.";
+    if (!ativas.length) area.append(texto("p", "Nenhuma campanha ativa.", "muted"));
   }
   async function selecionar(p) {
     state.pessoa = p; ["cartoes", "historico", "beneficios"].forEach(t => state.paginas[t] = 0);
     $("convite-cliente").hidden = true; $("link-cliente").value = ""; $("clientes-aviso").hidden = true;
-    $("cliente-vazio").hidden = true; $("cliente-detalhe").hidden = false; identidadeCliente(); restaurarCarimbo();
+    $("cliente-vazio").hidden = true; $("cliente-detalhe").hidden = false; identidadeCliente(); await restaurarCarimbo();
     todos("[data-pessoa]").forEach(b => b.classList.toggle("active", b.dataset.pessoa === p.id));
     trocarDetalhe("beneficios"); await carregarCliente();
   }
@@ -218,7 +252,6 @@
   function botaoResgate(r, contexto) {
     const b = texto("button", "Confirmar entrega", "primary"); b.dataset.resgatar = r.id;
     b.onclick = () => executar(async () => {
-      if (!confirm("O benefício “" + r.descricao + "” foi entregue ao cliente? Confirmar registra o resgate desta recompensa.")) return;
       const op = pendente("resgate", {}, r.id);
       await api(raiz() + "/recompensas/" + r.id + "/resgate", { method: "POST", headers: { "Idempotency-Key": op.chave } });
       concluirPendente("resgate", r.id); notificar("Entrega confirmada. Recompensa resgatada.", false, contexto);
@@ -228,7 +261,7 @@
   }
   function recompensaCliente(r) {
     const b = texto("div", "", "reward-item"), info = document.createElement("div");
-    info.append(statusBadge(r.status === "DISPONIVEL" ? "Disponível" : "Resgatada", r.status === "DISPONIVEL"), texto("h3", r.descricao), texto("p", "Ciclo " + r.ciclo + " · " + (r.resgatadaEm ? "Entregue em " + formatar(r.resgatadaEm) : "Conquistada em " + formatar(r.emitidaEm)))); b.append(info);
+    info.append(statusBadge(r.status === "DISPONIVEL" ? "Disponível" : "Resgatada", r.status === "DISPONIVEL"), texto("h3", r.descricao), texto("p", "Ciclo " + r.ciclo + " · " + (r.resgatadaEm ? "Entregue em " + formatar(r.resgatadaEm) + (r.entreguePor ? " por " + r.entreguePor : "") : "Conquistada em " + formatar(r.emitidaEm)))); b.append(info);
     if (r.status === "DISPONIVEL" && operar()) b.append(botaoResgate(r, "clientes-aviso")); return b;
   }
   async function carregarRecompensas() {
@@ -238,7 +271,7 @@
     if (!dados.conteudo.length) vazio("lista-recompensas", "Nenhuma recompensa neste filtro. Cada cartão completo abre uma nova conquista.");
     dados.conteudo.forEach(r => {
       const card = texto("article", "", "reward-tile"), top = texto("div", "", "reward-head"); top.append(statusBadge(r.status === "DISPONIVEL" ? "Disponível" : "Resgatada", r.status === "DISPONIVEL"), texto("small", "Ciclo " + r.ciclo, "muted"));
-      card.append(top, texto("h3", r.descricao), texto("p", r.participante), texto("p", r.resgatadaEm ? "Entregue em " + formatar(r.resgatadaEm) : "Conquistada em " + formatar(r.emitidaEm)));
+      card.append(top, texto("h3", r.descricao), texto("p", r.participante), texto("p", r.resgatadaEm ? "Entregue em " + formatar(r.resgatadaEm) + (r.entreguePor ? " por " + r.entreguePor : "") : "Conquistada em " + formatar(r.emitidaEm)));
       const acoes = texto("div", "", "reward-actions"), ver = texto("button", "Ver cliente →", "text-button");
       ver.onclick = () => executar(async () => { await navegar("clientes"); await selecionar({ id: r.participacaoId, nomeExibicao: r.participante, vinculadoAoCliente: false }); await atualizarIdentidadeSelecionada(); }, "clientes-aviso"); acoes.append(ver);
       if (r.status === "DISPONIVEL" && operar()) acoes.append(botaoResgate(r, "recompensas-aviso")); card.append(acoes); $("lista-recompensas").append(card);
@@ -297,6 +330,21 @@
     catch { $("link-" + tipo).disabled = false; $("link-" + tipo).select(); notificar("Selecione e copie o link com Ctrl+C."); }
   }
   // Ações e formulários.
+  todos("[data-atendimento]").forEach(b => b.onclick = () => executar(async () => {
+    const acao = b.dataset.atendimento;
+    if (acao === "recompensa") { await navegar("recompensas"); return; }
+    await navegar("clientes");
+    const contexto = $("contexto-atendimento");
+    if (contexto) contexto.textContent = ({buscar:"Busque pelo nome ou WhatsApp e selecione o cliente.", cadastrar:"Informe os dados para cadastrar um novo cliente.", carimbar:"Selecione um cliente para registrar carimbos nas campanhas desejadas."})[acao] || "";
+    if (acao === "cadastrar") {
+      if (!operar()) { notificar("Seu acesso não permite cadastrar clientes.", true, "clientes-aviso"); return; }
+      $("novo-cliente").click(); return;
+    }
+    if (acao === "carimbar" && state.pessoa) {
+      $("campanhas-atendimento").scrollIntoView({ behavior: "smooth", block: "center" }); $("form-carimbo").scrollIntoView({ behavior: "smooth", block: "center" });
+    } else { $("busca").focus(); }
+  }, "clientes-aviso"));
+  todos("[data-voltar-inicio]").forEach(b => b.onclick = () => executar(() => navegar(b.closest("[data-page]")?.dataset.page === "programa" ? "inicio" : "atendimento")));
   todos("[data-view]").forEach(b => b.onclick = () => executar(() => navegar(b.dataset.view)));
   todos("[data-go]").forEach(b => b.onclick = () => executar(() => navegar(b.dataset.go)));
   todos("[data-detail]").forEach(b => b.onclick = () => executar(async () => { trocarDetalhe(b.dataset.detail); await carregarDetalhe(b.dataset.detail); }, "clientes-aviso"));
@@ -307,14 +355,15 @@
   $("atualizar-inicio").onclick = () => executar(carregarInicio);
   $("form-busca").onsubmit = e => { e.preventDefault(); executar(async () => { state.busca = $("busca").value.trim(); state.paginas.clientes = 0; await carregarClientes(); }, "lista-aviso"); };
   $("novo-cliente").onclick = () => {
-    limparAvisos(); const op = lerPendente("cadastro"); $("nome-cliente").value = op?.dados.nomeExibicao || ""; $("nome-cliente").readOnly = !!op; $("cadastro-pendente").hidden = !op;
+    limparAvisos(); const op = lerPendente("cadastro"); $("nome-cliente").value = op?.dados.nomeExibicao || ""; $("nome-cliente").readOnly = !!op; $("whatsapp-cliente").value = op?.dados.whatsapp || ""; $("whatsapp-cliente").readOnly = !!op; $("cadastro-pendente").hidden = !op;
     $("cadastrar-cliente").textContent = op ? "Reenviar cadastro pendente" : "Cadastrar e abrir cartão"; $("modal-cliente").showModal(); $("nome-cliente").focus();
   };
   $("fechar-modal").onclick = () => $("modal-cliente").close();
   $("modal-cliente").addEventListener("cancel", e => { if (state.busy) e.preventDefault(); });
   $("form-cliente").onsubmit = e => { e.preventDefault(); executar(async () => {
     const nome = $("nome-cliente").value.trim(); if (!nome) throw new Error("Informe o nome do cliente.");
-    const op = pendente("cadastro", { nomeExibicao: nome }); $("nome-cliente").value = op.dados.nomeExibicao; $("nome-cliente").readOnly = true; $("cadastro-pendente").hidden = false;
+    const whatsapp = $("whatsapp-cliente").value.replace(/\D/g, ""); if (!/^(?:55)?[1-9][0-9]9[0-9]{8}$/.test(whatsapp)) throw new Error("Informe um celular com DDD válido.");
+    const op = pendente("cadastro", { nomeExibicao: nome, whatsapp }); $("nome-cliente").value = op.dados.nomeExibicao; $("nome-cliente").readOnly = true; $("whatsapp-cliente").readOnly = true; $("cadastro-pendente").hidden = false;
     const salvo = await api(raiz() + "/participantes", json(op.dados, "POST", op.chave)); concluirPendente("cadastro");
     $("modal-cliente").close(); state.busca = ""; $("busca").value = ""; state.paginas.clientes = 0;
     notificar("Cliente cadastrado e primeiro cartão aberto.", false, "clientes-aviso");
@@ -322,14 +371,19 @@
     catch (e) { notificar("Cadastro confirmado. Atualize a consulta para ver o cliente. " + e.message, true, "lista-aviso"); }
   }, "cadastro-aviso"); };
   $("form-carimbo").onsubmit = e => { e.preventDefault(); executar(async () => {
-    const referencia = $("referencia").value.trim(); if (!referencia) throw new Error("Informe uma referência da compra.");
-    const op = pendente("carimbo", { referenciaCompra: referencia }, state.pessoa.id); restaurarCarimbo();
-    const salvo = await api(pessoaRaiz() + "/carimbos", json(op.dados, "POST", op.chave)); concluirPendente("carimbo", state.pessoa.id); restaurarCarimbo();
-    notificar(salvo.concluiuCartao ? "Cartão completo! Uma recompensa foi emitida para o cliente." : "Compra confirmada. Saldo após a operação: " + salvo.saldoApos + " carimbos.", false, "clientes-aviso");
-    try { await carregarCliente(); } catch (e) { notificar("Carimbo confirmado. Atualize os dados do cliente. " + e.message, true, "clientes-aviso"); }
+    const selecionadas = [...$("campanhas-atendimento").querySelectorAll("input:checked")].map(c => c.value);
+    const existente = lerPendente("atendimento", state.pessoa.id);
+    if (!existente && !selecionadas.length) throw new Error("Selecione pelo menos uma campanha.");
+    const op = pendente("atendimento", { campanhas: selecionadas }, state.pessoa.id);
+    await restaurarCarimbo();
+    const salvos = await api(pessoaRaiz() + "/atendimentos", json(op.dados, "POST", op.chave));
+    concluirPendente("atendimento", state.pessoa.id);
+    await restaurarCarimbo();
+    notificar(salvos.length + " carimbo(s) registrado(s) com sucesso!", false, "clientes-aviso");
+    try { await carregarCliente(); } catch (e) { notificar("Carimbos confirmados. Atualize a consulta: " + e.message, true, "clientes-aviso"); }
   }, "clientes-aviso"); };
   $("atualizar-cliente").onclick = () => executar(async () => { await atualizarIdentidadeSelecionada(); await carregarCliente(); }, "clientes-aviso");
-  $("gerar-convite").onclick = () => executar(async () => { if (!confirm("Gerar convite para " + state.pessoa.nomeExibicao + "? O convite anterior desse cliente será substituído.")) return; linkConvite("cliente", await api(pessoaRaiz() + "/convite", { method: "POST" })); notificar("Convite gerado. Compartilhe somente com o titular do cartão.", false, "clientes-aviso"); }, "clientes-aviso");
+  $("gerar-convite").onclick = () => executar(async () => { linkConvite("cliente", await api(pessoaRaiz() + "/convite", { method: "POST" })); notificar("Convite gerado. Compartilhe somente com o titular do cartão.", false, "clientes-aviso"); }, "clientes-aviso");
   $("copiar-cliente").onclick = () => executar(() => copiar("cliente")); $("copiar-equipe").onclick = () => executar(() => copiar("equipe"));
   $("atualizar-recompensas").onclick = () => executar(carregarRecompensas);
   $("filtro-recompensas").onchange = () => executar(async () => { state.paginas.recompensas = 0; await carregarRecompensas(); });
@@ -344,7 +398,10 @@
   }, "programa-aviso"); };
   $("ver-historico").onclick = () => executar(historicoPrograma, "programa-aviso");
   $("atualizar-equipe").onclick = () => executar(carregarEquipe, "equipe-aviso");
-  $("form-equipe").onsubmit = e => { e.preventDefault(); executar(async () => { if (!confirm("Gerar um convite de funcionário para " + $("equipe-email").value.trim() + "? Um novo convite para esse e-mail substitui o anterior.")) return; linkConvite("equipe", await api(raiz() + "/equipe/convites", json({ email: $("equipe-email").value.trim() }))); notificar("Convite da equipe gerado. A pessoa deve entrar com esse mesmo e-mail e aceitar o vínculo.", false, "equipe-aviso"); await carregarEquipe(); }, "equipe-aviso"); };
+  $("equipe-email").addEventListener("input", () => $("equipe-email").setCustomValidity(""));
+  $("form-equipe").onsubmit = e => { e.preventDefault(); executar(async () => { const campo = $("equipe-email"); campo.setCustomValidity("");
+    try { linkConvite("equipe", await api(raiz() + "/equipe/convites", json({ email: campo.value.trim() }))); }
+    catch (erro) { if (erro.status === 409) { campo.setCustomValidity(erro.message.includes("desativada") ? "Esta conta está desativada." : "Este funcionário já está cadastrado na equipe."); campo.focus(); campo.reportValidity(); return; } throw erro; } notificar("Convite da equipe gerado. A pessoa deve entrar com esse mesmo e-mail e aceitar o vínculo.", false, "equipe-aviso"); await carregarEquipe(); }, "equipe-aviso"); };
   const cargas = { clientes: carregarClientes, recompensas: carregarRecompensas, cartoes: () => carregarDetalhe("cartoes"), historico: () => carregarDetalhe("historico"), beneficios: () => carregarDetalhe("beneficios") };
   Object.keys(cargas).forEach(tipo => ["anterior", "proxima"].forEach(direcao => $(tipo + "-" + direcao).onclick = () => executar(async () => {
     const anterior = state.paginas[tipo]; state.paginas[tipo] += direcao === "anterior" ? -1 : 1;
@@ -354,3 +411,6 @@
   $("data-hoje").textContent = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
   executar(async () => { try { await iniciar(); } catch (e) { if (e.status === 401) { sairDaTela(); return; } throw e; } });
 })();
+
+// Link para gestão de campanhas do estabelecimento selecionado.
+

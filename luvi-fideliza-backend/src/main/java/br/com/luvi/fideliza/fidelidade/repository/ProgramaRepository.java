@@ -6,5 +6,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProgramaRepository extends JpaRepository<ProgramaFidelidade, UUID> {
-  Optional<ProgramaFidelidade> findByEstabelecimentoId(UUID estabelecimentoId);
+  Optional<ProgramaFidelidade> findByEstabelecimentoIdAndPrincipalTrue(UUID estabelecimentoId);
+  java.util.List<ProgramaFidelidade> findByEstabelecimentoIdOrderByCriadoEmAsc(UUID estabelecimentoId);
 }

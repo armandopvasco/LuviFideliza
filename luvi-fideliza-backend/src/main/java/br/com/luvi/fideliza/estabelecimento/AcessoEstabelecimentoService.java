@@ -37,6 +37,7 @@ public class AcessoEstabelecimentoService {
   }
 
   public record Negocio(UUID id, String nome) {}
+  public record AceiteConcluido(UUID id, String nome, String email) {}
 
   public record ConviteCriado(UUID estabelecimentoId, String token, Instant expiraEm) {}
 
@@ -62,6 +63,23 @@ public class AcessoEstabelecimentoService {
     var u = usuario(email);
     if (!u.getAdministradorPlataforma()) throw new AccessDeniedException("Acesso negado");
     return u;
+  }
+
+  public record EstabelecimentoAdmin(UUID id, String nome, boolean ativo, String proprietario, String emailProprietario) {}
+
+  @Transactional(readOnly = true)
+  public List<EstabelecimentoAdmin> listarAdmin(String email) {
+    exigirAdmin(email);
+    return estabelecimentos.findAll().stream()
+        .sorted(Comparator.comparing(Estabelecimento::getNome, String.CASE_INSENSITIVE_ORDER))
+        .map(e -> {
+          var dono = membros.findByEstabelecimentoId(e.getId()).stream()
+              .filter(m -> "PROPRIETARIO".equals(m.getPapel()) && m.getAtivo())
+              .findFirst()
+              .flatMap(m -> usuarios.findById(m.getUsuarioId()));
+          return new EstabelecimentoAdmin(e.getId(), e.getNome(), e.getAtivo(),
+              dono.map(Usuario::getNome).orElse(null), dono.map(Usuario::getEmail).orElse(null));
+        }).toList();
   }
 
   @Transactional(readOnly = true)
@@ -99,7 +117,7 @@ public class AcessoEstabelecimentoService {
   }
 
   @Transactional
-  public Negocio aceitar(String token, String nome, String senha) {
+  public AceiteConcluido aceitar(String token, String nome, String senha) {
     var c =
         convites
             .buscarParaConsumo(hash(token))
@@ -127,7 +145,7 @@ public class AcessoEstabelecimentoService {
     membros.save(
         new MembroEstabelecimento(UUID.randomUUID(), u.getId(), e.getId(), "PROPRIETARIO", true));
     c.consumir(agora);
-    return new Negocio(e.getId(), e.getNome());
+    return new AceiteConcluido(e.getId(), e.getNome(), c.getEmail());
   }
 
   private static ResponseStatusException conviteInvalido() {

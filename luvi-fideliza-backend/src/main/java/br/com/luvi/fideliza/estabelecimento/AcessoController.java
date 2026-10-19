@@ -39,6 +39,11 @@ public class AcessoController {
         "email", a.getName(), "perfis", a.getAuthorities().stream().map(Object::toString).toList());
   }
 
+  @GetMapping("/api/v1/admin/estabelecimentos")
+  public List<AcessoEstabelecimentoService.EstabelecimentoAdmin> listar(Authentication a) {
+    return service.listarAdmin(a.getName());
+  }
+
   @PostMapping("/api/v1/admin/estabelecimentos")
   @ResponseStatus(HttpStatus.CREATED)
   public AcessoEstabelecimentoService.Negocio cadastrar(
@@ -55,7 +60,7 @@ public class AcessoController {
 
   @PostMapping("/api/v1/auth/convites/aceitar")
   @ResponseStatus(HttpStatus.CREATED)
-  public AcessoEstabelecimentoService.Negocio aceitar(@Valid @RequestBody Aceite c) {
+  public AcessoEstabelecimentoService.AceiteConcluido aceitar(@Valid @RequestBody Aceite c) {
     return service.aceitar(c.token(), c.nome(), c.senha());
   }
 

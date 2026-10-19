@@ -1,0 +1,43 @@
+:root{font-family:system-ui,-apple-system,sans-serif;color:#30475a;background:#f8f7f4}*{box-sizing:border-box}body{margin:0}header{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:16px 22px;border-bottom:1px solid #e3e7e4}.brand{display:flex;align-items:center;gap:10px}.brand img{width:42px;height:42px;object-fit:contain}.brand small,.brand strong{display:block}.brand small{font-size:11px;letter-spacing:2px;color:#81978a}.brand strong{font-size:21px}header>span{font-size:12px;color:#84918c}main{max-width:580px;margin:auto;padding:26px 18px 60px}h1{font-size:25px;margin:8px 0}p{color:#6c7d82;line-height:1.5}#acesso,.cartao{border:1px solid #e5e7e4;background:white;border-radius:18px;padding:22px;box-shadow:0 4px 18px #2139470b}label{display:block;margin:16px 0;font-size:13px;font-weight:600}input{display:block;width:100%;margin-top:7px;padding:13px;border:1px solid #d6dedb;border-radius:10px;font-size:16px}button{border:0;background:#405e6b;color:#fff;border-radius:11px;padding:12px 18px;font-weight:650;cursor:pointer;margin-top:12px}.secundario{background:#e4ede8;color:#30475a}.link{background:transparent;color:#405e6b}.lista{display:grid;gap:15px;margin:22px 0}.cartao h2{font-size:19px;margin:0 0 5px}.cartao .estabelecimento{font-size:13px;color:#667f76;margin:0 0 13px}.progress{height:10px;background:#e4ebe8;border-radius:20px;overflow:hidden;margin:17px 0 7px}.progress span{display:block;height:100%;background:#85a18e;border-radius:20px}.cartao .premio{color:#405e6b;font-weight:600}#mensagem{min-height:1.5em}footer{text-align:center;color:#9aa7a3;font-size:12px;padding:20px}
+/* Cartão de fidelidade personalizado por estabelecimento */
+.cartao-fidelidade{background:var(--cor-cartao,#30475a);color:#fff;border:0;box-shadow:0 10px 26px #1a2e3b2b;padding:24px;}
+.cartao-fidelidade h2,.cartao-fidelidade .premio,.cartao-fidelidade .estabelecimento,.cartao-fidelidade .cartao-status{color:#fff;}
+.cartao-fidelidade .estabelecimento{opacity:.85;letter-spacing:.04em;text-transform:uppercase}
+.carimbos{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:10px;margin:22px 0;}
+.carimbo{aspect-ratio:1;max-width:62px;width:100%;display:grid;place-items:center;border:2px dashed #ffffff9e;border-radius:50%;font-size:21px;color:#fff9;}
+.carimbo.marcado{background:var(--cor-carimbo,#87a18f);border:2px solid #fff9;color:#fff;font-weight:800;}
+.cartao-status{font-size:13px;opacity:.9}
+
+.cartao-fidelidade{background-position:center;background-size:cover;background-repeat:no-repeat;min-height:205px}
+.cartao-fidelidade .carimbos{grid-template-columns:repeat(auto-fit,minmax(38px,1fr))}
+#previa-cartao .carimbo{color:#fff}#previa-cartao .carimbo.marcado{background:var(--cor-carimbo,#87a18f)}
+select{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d6dedb;border-radius:10px;background:white}
+
+/* Faixa de recompensa independente da foto e das cores do cartão. */
+.cartao-fidelidade{overflow:hidden}
+.cartao-fidelidade .luvi-faixa-recompensa{display:flex;align-items:flex-start;gap:12px;background:#e5f3e8;color:#245d39;padding:17px 20px;margin:18px -24px -24px;border-radius:0 0 18px 18px;white-space:normal;text-align:left;opacity:1}
+.cartao-fidelidade .luvi-faixa-recompensa strong{display:block;font-size:15px;line-height:1.4;color:#245d39}
+.cartao-fidelidade .luvi-faixa-recompensa p{color:#35684a!important;margin:5px 0 0;font-size:13px;line-height:1.5;opacity:1}
+.cartao-fidelidade .luvi-faixa-icone{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#cbe7d1;color:#28633d;font-size:22px}
+.cartao-fidelidade .luvi-faixa-resgatada{background:#e9ecef;color:#475569}
+.cartao-fidelidade .luvi-faixa-resgatada strong,.cartao-fidelidade .luvi-faixa-resgatada p{color:#475569!important}
+.cartao-fidelidade .luvi-faixa-resgatada .luvi-faixa-icone{background:#d9dfe4;color:#475569}
+@media(max-width:400px){.cartao-fidelidade .luvi-faixa-recompensa{gap:9px;padding:14px}.cartao-fidelidade .luvi-faixa-icone{width:34px;height:34px;font-size:18px}}
+
+/* v0.8.9.2: faixa sobreposta à foto somente no rodapé */
+.cartao-fidelidade{position:relative;padding-bottom:24px}
+.cartao-fidelidade .luvi-faixa-recompensa{position:relative;clear:both;margin:20px -24px -24px!important;background:#e5f3e8!important;color:#245d39!important;display:flex!important;border-radius:0 0 18px 18px;z-index:1}
+.cartao-fidelidade .luvi-faixa-recompensa p,.cartao-fidelidade .luvi-faixa-recompensa strong{color:#245d39!important}
+.cartao-fidelidade .luvi-faixa-resgatada{background:#e9ecef!important}
+.cartao-fidelidade .luvi-faixa-resgatada p,.cartao-fidelidade .luvi-faixa-resgatada strong{color:#475569!important}
+.luvi-recompensa-selo{display:inline-block;float:right;background:#d6efdf;color:#1e653a;border-radius:999px;font-size:12px;font-weight:700;padding:5px 10px;margin-bottom:10px}
+.luvi-recompensa-aviso{margin-top:7px;font-size:12px;color:#35684a}
+
+/* v0.8.9.3 - Destaque renderizado diretamente no cartão do cliente */
+.cartao-fidelidade .luvi-premio-selo-v0893{display:table;margin:0 0 14px auto;background:#d6efdf;color:#1e653a;border-radius:999px;font-size:12px;font-weight:700;padding:6px 12px;position:relative;z-index:2}
+.cartao-fidelidade .luvi-premio-faixa-v0893{display:flex;align-items:center;gap:12px;position:relative;z-index:2;background:#e5f3e8;color:#245d39;margin:20px -24px -24px;padding:18px 20px;border-radius:0 0 18px 18px;text-align:left;white-space:normal}
+.cartao-fidelidade .luvi-premio-faixa-v0893 strong{color:#245d39;font-size:15px;line-height:1.4;display:block}
+.cartao-fidelidade .luvi-premio-faixa-v0893 p{color:#35684a!important;font-size:13px;line-height:1.5;margin:5px 0 0}
+.cartao-fidelidade .luvi-premio-icone-v0893{width:42px;height:42px;flex-shrink:0;border-radius:50%;background:#cbe7d1;color:#28633d;display:grid;place-items:center;font-size:22px}
+.cartao-fidelidade .luvi-premio-faixa-v0893.resgatada{background:#e9ecef;color:#475569}
+.cartao-fidelidade .luvi-premio-faixa-v0893.resgatada strong,.cartao-fidelidade .luvi-premio-faixa-v0893.resgatada p{color:#475569!important}

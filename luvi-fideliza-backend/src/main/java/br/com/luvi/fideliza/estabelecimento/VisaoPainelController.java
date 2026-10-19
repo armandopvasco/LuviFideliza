@@ -1,6 +1,7 @@
 package br.com.luvi.fideliza.estabelecimento;
 
 import br.com.luvi.fideliza.equipe.PermissaoEstabelecimentoService;
+import br.com.luvi.fideliza.usuario.Usuario;
 import br.com.luvi.fideliza.fidelidade.dto.CartaoDtos.Pagina;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -44,7 +45,8 @@ public class VisaoPainelController {
       String descricao,
       String status,
       Instant emitidaEm,
-      Instant resgatadaEm) {}
+      Instant resgatadaEm,
+      String entreguePor) {}
 
   @GetMapping("/resumo")
   public Resumo resumo(@PathVariable UUID id, Authentication auth) {
@@ -94,7 +96,7 @@ public class VisaoPainelController {
         em
             .createQuery(
                 "select r.id, p.id, p.nomeExibicao, c.numero, v.recompensa, r.emitidaEm,"
-                    + " r.resgatadaEm"
+                    + " r.resgatadaEm, r.resgatadaPor"
                     + from
                     + " order by r.emitidaEm desc, r.id",
                 Object[].class)
@@ -113,7 +115,10 @@ public class VisaoPainelController {
                         (String) r[4],
                         r[6] == null ? "DISPONIVEL" : "RESGATADA",
                         (Instant) r[5],
-                        (Instant) r[6]))
+                        (Instant) r[6],
+                        r[7] == null ? null :
+                            java.util.Optional.ofNullable(em.find(Usuario.class, (UUID) r[7]))
+                                .map(Usuario::getNome).orElse("Usuário não encontrado")))
             .toList();
     return new Pagina<>(linhas, pagina, tamanho, total);
   }

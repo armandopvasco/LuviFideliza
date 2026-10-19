@@ -53,17 +53,20 @@ public class CartaoService {
   }
 
   @Transactional
-  public Resultado<Cadastro> cadastrar(UUID negocio, UUID chave, String nome, String email) {
+  public Resultado<Cadastro> cadastrar(UUID negocio, UUID chave, String nome, String whatsapp, String email) {
+    String telefone = normalizarWhatsapp(whatsapp);
     UUID autor = permissoes.exigirOperacao(negocio, email).getId();
     estabelecimento(negocio, true);
     Optional<Participacao> existente =
         participacoes.findByEstabelecimentoIdAndChaveCadastro(negocio, chave);
     if (existente.isPresent()) {
       Participacao p = existente.get();
-      if (!p.getNomeExibicao().equals(nome.trim())) throw conflitoChave();
+      if (!p.getNomeExibicao().equals(nome.trim()) || !telefone.equals(p.getWhatsapp())) throw conflitoChave();
       CartaoFidelidade primeiro = cartoes.findByParticipacaoIdAndNumero(p.getId(), 1).orElseThrow();
       return new Resultado<>(new Cadastro(participante(p), cartao(primeiro)), true);
     }
+    if (participacoes.findFirstByEstabelecimentoIdAndWhatsappOrderByCriadoEmAsc(negocio, telefone).isPresent())
+      throw new ResponseStatusException(CONFLICT, "WhatsApp já cadastrado neste estabelecimento. Busque o cliente antes de criar outro cartão.");
     ProgramaFidelidade programa = programa(negocio);
     Participacao p =
         participacoes.save(
@@ -78,6 +81,7 @@ public class CartaoService {
                 autor,
                 null,
                 null));
+    p.definirWhatsapp(telefone);
     CartaoFidelidade c = abrirCartao(p, 1, programa);
     return new Resultado<>(new Cadastro(participante(p), cartao(c)), false);
   }
@@ -152,6 +156,56 @@ public class CartaoService {
                 agora,
                 autor));
     return new Resultado<>(carimbo(m), false);
+  }
+
+  /** Um atendimento pode creditar campanhas diferentes, sem limitar por data. */
+  @Transactional
+  public List<Carimbo> creditarCampanhas(UUID negocio, UUID participanteId, UUID chaveAtendimento,
+      List<UUID> campanhas, String email) {
+    if (campanhas == null || campanhas.isEmpty() || campanhas.size() > 20 ||
+        new HashSet<>(campanhas).size() != campanhas.size() || campanhas.contains(null))
+      throw new ResponseStatusException(BAD_REQUEST, "Selecione de 1 a 20 campanhas distintas");
+    UUID autor = permissoes.exigirOperacao(negocio, email).getId();
+    estabelecimento(negocio, true);
+    Participacao origem = participacao(negocio, participanteId);
+    List<Carimbo> resultado = new ArrayList<>();
+    for (UUID campanhaId : campanhas) {
+      ProgramaFidelidade programa = programas.findById(campanhaId)
+          .filter(x -> x.getEstabelecimentoId().equals(negocio))
+          .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Campanha não encontrada"));
+      // Reenvio idempotente continua válido mesmo após pausar a campanha.
+      UUID chave = UUID.nameUUIDFromBytes((chaveAtendimento + ":" + campanhaId).getBytes(StandardCharsets.UTF_8));
+      Optional<MovimentacaoCarimbo> anterior = carimbos.findByEstabelecimentoIdAndChaveOperacao(negocio, chave);
+      if (anterior.isPresent()) {
+        MovimentacaoCarimbo m = anterior.get();
+        Participacao pAnterior = participacoes.findById(m.getParticipacaoId()).orElseThrow();
+        if (!Objects.equals(pAnterior.getWhatsapp(), origem.getWhatsapp()) ||
+            !pAnterior.getProgramaId().equals(campanhaId)) throw conflitoChave();
+        resultado.add(carimbo(m));
+        continue;
+      }
+      if (!programa.isAtiva()) throw new ResponseStatusException(CONFLICT, "Campanha pausada");
+      Participacao p = participacoes.findByProgramaIdAndWhatsapp(campanhaId, origem.getWhatsapp())
+          .orElseGet(() -> {
+            Participacao nova = new Participacao(UUID.randomUUID(), negocio, campanhaId,
+                origem.getUsuarioId(), origem.getNomeExibicao(), UUID.randomUUID(),
+                Instant.now(), autor, null, null);
+            nova.definirWhatsapp(origem.getWhatsapp());
+            Participacao salva = participacoes.save(nova);
+            abrirCartao(salva, 1, programa);
+            return salva;
+          });
+      CartaoFidelidade c = cartoes.findTopByParticipacaoIdOrderByNumeroDesc(p.getId()).orElseThrow();
+      if (c.getConcluidoEm() != null) c = abrirCartao(p, c.getNumero() + 1, programa);
+      VersaoPrograma regras = versoes.findById(c.getVersaoProgramaId()).orElseThrow();
+      Instant agora = Instant.now();
+      c.creditar(regras.getMetaCarimbos(), agora);
+      recompensas.emitir(c);
+      MovimentacaoCarimbo m = carimbos.save(new MovimentacaoCarimbo(UUID.randomUUID(),
+          negocio, p.getId(), c.getId(), chave, "Atendimento", c.getSaldo(), agora, autor));
+      resultado.add(carimbo(m));
+    }
+    return resultado;
   }
 
   @Transactional(readOnly = true)
@@ -252,7 +306,7 @@ public class CartaoService {
 
   private ProgramaFidelidade programa(UUID negocio) {
     return programas
-        .findByEstabelecimentoId(negocio)
+        .findByEstabelecimentoIdAndPrincipalTrue(negocio)
         .orElseThrow(
             () ->
                 new ResponseStatusException(
@@ -277,9 +331,17 @@ public class CartaoService {
         .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
   }
 
+  private static String normalizarWhatsapp(String valor) {
+    String digitos = valor == null ? "" : valor.replaceAll("\\D", "");
+    if (digitos.length() == 11 && digitos.matches("[1-9][0-9]9[0-9]{8}")) digitos = "55" + digitos;
+    if (!digitos.matches("55[1-9][0-9]9[0-9]{8}"))
+      throw new ResponseStatusException(BAD_REQUEST, "Informe um WhatsApp celular brasileiro válido com DDD.");
+    return digitos;
+  }
+
   private Participante participante(Participacao p) {
     return new Participante(
-        p.getId(), p.getEstabelecimentoId(), p.getNomeExibicao(), p.getUsuarioId() != null);
+        p.getId(), p.getEstabelecimentoId(), p.getNomeExibicao(), p.getWhatsapp(), p.getUsuarioId() != null);
   }
 
   private Cartao cartao(CartaoFidelidade c) {

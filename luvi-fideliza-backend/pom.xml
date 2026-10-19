@@ -9,7 +9,7 @@
     </parent>
     <groupId>br.com.luvi</groupId>
     <artifactId>luvi-fideliza-backend</artifactId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.6.2-SNAPSHOT</version>
     <name>LUVI Fideliza+</name>
     <description>Painel integrado de fidelidade e gestão da equipe</description>
     <properties>

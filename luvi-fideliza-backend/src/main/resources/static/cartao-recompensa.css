@@ -1,0 +1,19 @@
+/* Faixa de recompensa independente da foto e das cores do cartão. */
+.cartao-fidelidade{overflow:hidden}
+.cartao-fidelidade .luvi-faixa-recompensa{display:flex;align-items:flex-start;gap:12px;background:#e5f3e8;color:#245d39;padding:17px 20px;margin:18px -24px -24px;border-radius:0 0 18px 18px;white-space:normal;text-align:left;opacity:1}
+.cartao-fidelidade .luvi-faixa-recompensa strong{display:block;font-size:15px;line-height:1.4;color:#245d39}
+.cartao-fidelidade .luvi-faixa-recompensa p{color:#35684a!important;margin:5px 0 0;font-size:13px;line-height:1.5;opacity:1}
+.cartao-fidelidade .luvi-faixa-icone{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#cbe7d1;color:#28633d;font-size:22px}
+.cartao-fidelidade .luvi-faixa-resgatada{background:#e9ecef;color:#475569}
+.cartao-fidelidade .luvi-faixa-resgatada strong,.cartao-fidelidade .luvi-faixa-resgatada p{color:#475569!important}
+.cartao-fidelidade .luvi-faixa-resgatada .luvi-faixa-icone{background:#d9dfe4;color:#475569}
+@media(max-width:400px){.cartao-fidelidade .luvi-faixa-recompensa{gap:9px;padding:14px}.cartao-fidelidade .luvi-faixa-icone{width:34px;height:34px;font-size:18px}}
+
+/* v0.8.9.2: faixa sobreposta à foto somente no rodapé */
+.cartao-fidelidade{position:relative;padding-bottom:24px}
+.cartao-fidelidade .luvi-faixa-recompensa{position:relative;clear:both;margin:20px -24px -24px!important;background:#e5f3e8!important;color:#245d39!important;display:flex!important;border-radius:0 0 18px 18px;z-index:1}
+.cartao-fidelidade .luvi-faixa-recompensa p,.cartao-fidelidade .luvi-faixa-recompensa strong{color:#245d39!important}
+.cartao-fidelidade .luvi-faixa-resgatada{background:#e9ecef!important}
+.cartao-fidelidade .luvi-faixa-resgatada p,.cartao-fidelidade .luvi-faixa-resgatada strong{color:#475569!important}
+.luvi-recompensa-selo{display:inline-block;float:right;background:#d6efdf;color:#1e653a;border-radius:999px;font-size:12px;font-weight:700;padding:5px 10px;margin-bottom:10px}
+.luvi-recompensa-aviso{margin-top:7px;font-size:12px;color:#35684a}

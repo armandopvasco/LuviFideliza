@@ -8,14 +8,14 @@ import java.util.UUID;
 public final class CartaoDtos {
   private CartaoDtos() {}
 
-  public record CadastrarParticipante(@NotBlank @Size(max = 120) String nomeExibicao) {}
+  public record CadastrarParticipante(@NotBlank @Size(max = 120) String nomeExibicao, @NotBlank String whatsapp) {}
 
   public record RegistrarCarimbo(@NotBlank @Size(max = 120) String referenciaCompra) {}
 
   public record AceitarConvite(@NotBlank @Size(max = 100) String token) {}
 
   public record Participante(
-      UUID id, UUID estabelecimentoId, String nomeExibicao, boolean vinculadoAoCliente) {}
+      UUID id, UUID estabelecimentoId, String nomeExibicao, String whatsapp, boolean vinculadoAoCliente) {}
 
   public record Cartao(
       UUID id,

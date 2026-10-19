@@ -39,12 +39,13 @@ public class ProgramaService {
     // O bloqueio no estabelecimento também serializa o primeiro cadastro, quando ainda não há
     // programa.
     estabelecimentoAtivo(estabelecimentoId, true);
-    if (programas.findByEstabelecimentoId(estabelecimentoId).isPresent()) {
+    if (programas.findByEstabelecimentoIdAndPrincipalTrue(estabelecimentoId).isPresent()) {
       throw new ResponseStatusException(
           CONFLICT, "Já existe um programa. Use a atualização de regras.");
     }
     ProgramaFidelidade programa =
         programas.save(new ProgramaFidelidade(estabelecimentoId, Instant.now()));
+    programa.setPrincipal(true);
     VersaoPrograma versao = versoes.save(novaVersao(programa, dados, autor));
     return ProgramaResponse.de(programa, versao);
   }
@@ -98,7 +99,7 @@ public class ProgramaService {
 
   private ProgramaFidelidade programa(UUID estabelecimentoId) {
     return programas
-        .findByEstabelecimentoId(estabelecimentoId)
+        .findByEstabelecimentoIdAndPrincipalTrue(estabelecimentoId)
         .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Programa ainda não cadastrado"));
   }
 

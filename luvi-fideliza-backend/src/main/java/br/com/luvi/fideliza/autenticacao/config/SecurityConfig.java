@@ -43,6 +43,22 @@ public class SecurityConfig {
     http.authorizeHttpRequests(
             a ->
                 a.requestMatchers(
+                        "/admin.html",
+                        "/admin.js",
+                        "/proprietario-convite.html",
+                        "/campanhas.html",
+                        "/campanhas.js",
+                        "/cliente.html",
+                        "/cliente.css",
+                        "/cliente.js",
+                        "/cartao-personalizacao.js",
+                        "/cliente-sw.js",
+                        "/cliente.webmanifest",
+                        "/cliente-icon-192.png",
+                        "/cliente-icon-512.png",
+                        "/luvi-logo.png",
+                        "/luvi-marca.png",
+                        "/luvi-simbolo.png",
                         "/painel.html",
                         "/painel.css",
                         "/painel.js",
@@ -72,6 +88,9 @@ public class SecurityConfig {
             e ->
                 e.authenticationEntryPoint((req, res, ex) -> res.setStatus(401))
                     .accessDeniedHandler((req, res, ex) -> res.setStatus(403)));
+    // Permite incorporar somente páginas da própria origem no painel.
+    // Mantém a proteção contra incorporação por sites externos.
+    http.headers(h -> h.frameOptions(f -> f.sameOrigin()));
     // CSRF e proteção contra fixação de sessão permanecem habilitados.
     return http.build();
   }

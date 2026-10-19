@@ -4,3 +4,71 @@
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:sticky;z-index:30;top:0;height:auto;flex-direction:row;align-items:center;padding:12px 20px;gap:25px;background:#fffdf9ed;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);border-right:0}.sidebar .wordmark{font-size:24px;padding:0;letter-spacing:2px}.sidebar .wordmark span{font-size:8px;letter-spacing:1px;margin-top:4px}.sidebar nav{display:flex;gap:5px;flex:1;justify-content:flex-end}.nav-item{padding:10px;font-size:11px;gap:6px}.nav-item svg{width:17px;height:17px}.nav-item.active:after,.nav-label,.sidebar-note,.sidebar-bottom{display:none}.topbar{height:75px}.account small{max-width:190px;overflow:hidden;text-overflow:ellipsis}}
 @media(max-width:650px){.sidebar{padding:12px;gap:12px;align-items:flex-start}.sidebar .wordmark{font-size:21px;padding-top:7px}.sidebar nav{gap:0}.nav-item{padding:6px 8px;flex-direction:column;font-size:9px;gap:4px;border-radius:8px}.nav-item svg{width:17px;height:17px}.topbar{padding:14px 17px;height:76px}.store-picker{gap:8px}.store-icon{width:31px;height:31px;font-size:17px}.store-picker select{max-width:155px;font-size:11px}.account{gap:5px}.account strong{font-size:9px}.account small{max-width:95px;font-size:9px}.account .ghost{padding:5px 0 5px 10px;font-size:11px;margin-left:5px}main{padding:23px 16px 18px}.page-heading{align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:20px}.page-heading h1{font-size:26px;letter-spacing:-.8px}.page-heading .eyebrow{font-size:8px}.page-heading p.muted{font-size:12px}.page-heading>.primary,.page-heading>.secondary{font-size:11px;padding:9px 13px;min-height:37px}.hero{padding:23px;min-height:auto}.hero h2{font-size:25px}.hero p{font-size:11px}.hero-card{display:none}.stats{grid-template-columns:1fr 1fr;gap:12px;margin:17px 0}.stat{padding:17px}.stat strong{font-size:28px}.stat-icon{float:right;height:29px;width:29px;margin:0}.stat p{font-size:10px;max-width:110px;min-height:31px}.stat small{font-size:9px}.home-bottom,.clients-layout,.program-layout,.team-layout{grid-template-columns:1fr;gap:17px}.clients-list #lista-clientes{max-height:260px;overflow:auto}.client-detail{min-height:350px}.section-heading h2{font-size:17px}.person-heading .avatar{width:30px;height:30px;font-size:10px}.person-heading h2{font-size:17px}.client-detail .section-heading>.ghost{font-size:9px;padding:6px 0}.loyalty-card{padding:20px}.loyalty-card h3{font-size:22px}.stamp-dots{gap:8px}.stamp-dot{width:29px;height:29px}.input-action{gap:6px}.input-action button{padding:11px;font-size:11px}.detail-tabs{gap:20px}.detail-tabs button{font-size:11px}.rewards-grid{grid-template-columns:1fr}.reward-item{padding:13px;gap:10px}.reward-item button{font-size:10px;padding:8px}.field-row{grid-template-columns:110px 1fr;gap:17px}.field-tip{font-size:10px}.feedback{left:15px;right:15px;bottom:15px;max-width:none;font-size:12px}.page-footer{font-size:8px;align-items:flex-start}.page-footer span:last-child{max-width:75px;text-align:right}.login-layout{grid-template-columns:1fr}.login-story{min-height:auto;padding:28px;gap:30px}.login-story>div,.login-story>small{display:none}.login-story .wordmark{font-size:29px}.login-story .wordmark span{font-size:10px}.login-access{padding:38px 25px;align-items:start;min-height:calc(100vh - 110px)}.login-box h2{font-size:29px}.team-person{gap:10px}.team-person .ghost{font-size:10px;padding:7px}.team-person .avatar{width:31px;height:31px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* v0.6.1 - atalhos operacionais responsivos */
+.quick-actions{margin:0 0 22px}.quick-actions-title{margin-bottom:13px}.quick-actions-title h2{font-size:19px;letter-spacing:-.4px}.quick-actions-title p{color:var(--muted);font-size:12px;margin-top:5px}.quick-actions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.quick-action{display:flex;align-items:center;gap:12px;min-height:84px;text-align:left;padding:15px;border:1px solid var(--border);border-radius:12px;background:#fffdf9;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}.quick-action:hover{background:#f6f6ee;border-color:#bdc9b2}.quick-action:focus-visible{outline:3px solid #a34f53;outline-offset:2px}.quick-action svg{width:23px;height:23px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7}.quick-action>span:nth-child(2){display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}.quick-action strong{font-size:13px}.quick-action small{font-size:11px;color:var(--muted);line-height:1.35}.quick-action>span:last-child{font-size:20px;color:var(--brand)}@media(max-width:900px){.quick-actions-grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.quick-actions-grid{grid-template-columns:1fr;gap:9px}.quick-action{min-height:65px;padding:12px 15px}.quick-actions-title h2{font-size:18px}.quick-action strong{font-size:13px}.quick-action small{font-size:11px}}
+
+/* v0.7.0 — ações de atendimento responsivas */
+.atendimento-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0}
+.atendimento-acao{display:flex;flex-direction:column;align-items:flex-start;gap:12px;text-align:left;padding:24px;min-height:166px;background:var(--surface,#fff);border:1px solid rgba(130,90,90,.18);border-radius:18px;cursor:pointer;color:inherit;box-shadow:0 3px 16px rgba(0,0,0,.035)}
+.atendimento-acao:hover,.atendimento-acao:focus-visible{border-color:#a34f53;outline-offset:3px}
+.atendimento-acao svg{width:28px;height:28px;stroke:currentColor;fill:none}
+.atendimento-acao strong{font-size:1.15rem}
+.atendimento-acao span{font-size:.92rem;opacity:.76}
+.atendimento-ajuda{margin-top:18px}
+@media(max-width:650px){.atendimento-grid{grid-template-columns:1fr;gap:10px}.atendimento-acao{min-height:100px;padding:18px;gap:7px}.atendimento-acao svg{width:24px;height:24px}}
+
+/* Identidade LUVI: azul-marinho, verde-folha e pêssego */
+:root{--paper:#fff9f5;--ink:#102e52;--muted:#617184;--brand:#082b5b;--border:#eadfd8;--surface:#fff}
+body{background:var(--paper)}
+a{color:var(--brand)}
+button:focus-visible,a:focus-visible{outline-color:#71947b}
+input:focus,select:focus,textarea:focus{outline-color:#7c9a82}
+.sidebar{background:#fffdfb}.nav-item{color:#52647a}.nav-item.active{color:#082b5b;background:#ffe5d8}.nav-item.active:after{background:#7e9f7c}
+.sidebar-note{background:#eaf1e8;color:#45674e}.sidebar-note p{color:#627f69}
+.topbar{background:#ffffffed}.store-icon{background:#fbe4d7;color:#082b5b}
+.primary{background:#082b5b;color:white}.secondary{border-color:#d9e1e6}.text-button{color:#082b5b}
+.eyebrow{color:#62826b}.hero{background:linear-gradient(110deg,#ffdac8,#fff0e7 60%,#e9f1e6);border-color:#f2d6c6}
+.hero h2,.hero-card p{color:#082b5b}.hero p{color:#54657b}.pill{color:#082b5b;background:#ffffffa8}
+.hero-card{background:#fffdfa;border-color:#f3ddd1;color:#082b5b}.mini-dots span{background:#e1ede0;color:#52785a}.mini-dots span:last-child{background:#ffe0d2;color:#082b5b}
+.sage{background:#e4efe4;color:#64886b}.peach{background:#ffe5d7;color:#b87755}.rose{background:#fbe8df;color:#082b5b}.sand{background:#eaf0e7;color:#769278}
+.badge.rose{background:#ffe6dc;color:#082b5b}.client-row.active{background:#fff0e7}.avatar{background:#ffe5d7;color:#082b5b}
+.loyalty-card{background:linear-gradient(120deg,#fff0e6,#eaf1e8);border-color:#e8ddd5;color:#173a60}.loyalty-card h3{color:#082b5b}
+.login-story{background:linear-gradient(140deg,#ffd7c4,#ffeadf 55%,#e6efe4)}.login-story h1{color:#082b5b}.login-story p,.login-story small{color:#5a7081}.story-stamps span{border-color:#8aa58c;color:#5d8065}
+.login-access{background:#fffdfb}.login-foot{color:#617184}
+.quick-action{background:#fffdfb}.quick-action:hover{background:#fff0e7;border-color:#8fae91}.quick-action:focus-visible{outline-color:#71947b}
+.atendimento-acao{border-color:#eadfd8}.atendimento-acao:hover,.atendimento-acao:focus-visible{border-color:#72967c;background:#fff8f3}
+.brand-lockup{display:inline-flex;align-items:center;gap:9px;text-decoration:none;letter-spacing:0;line-height:1;color:#082b5b}
+.brand-lockup img{display:block;width:91px;height:auto;max-height:55px;object-fit:contain}
+.brand-lockup span{display:inline-block;font-size:16px;font-weight:700;letter-spacing:-.3px;margin:0;color:#082b5b;white-space:nowrap}
+.sidebar .brand-lockup{padding-left:0}.sidebar .brand-lockup img{width:90px}.sidebar .brand-lockup span{font-size:15px}
+.login-story .brand-lockup img{width:132px}.login-story .brand-lockup span{font-size:21px}
+.mini-brand.brand-lockup img{width:74px}.mini-brand.brand-lockup span{font-size:12px;font-weight:700;letter-spacing:0}
+@media(max-width:900px){.sidebar .brand-lockup img{width:64px}.sidebar .brand-lockup span{font-size:12px}}
+@media(max-width:650px){.sidebar .brand-lockup{gap:4px}.sidebar .brand-lockup img{width:45px}.sidebar .brand-lockup span{font-size:10px}.login-story .brand-lockup img{width:95px}.login-story .brand-lockup span{font-size:16px}}
+
+/* Identidade LUVI: cores suaves e imagens locais reais */
+:root{--paper:#fcfaf8;--ink:#1d3e5b;--muted:#647788;--brand:#1d3e5b;--border:#e9e3df;--surface:#fff}
+body,.workspace{background:#fcfaf8;color:var(--ink)}
+.sidebar,.topbar,.login-access{background:#fff}
+.login-story{background:linear-gradient(145deg,#fff0e8 0%,#faf2eb 55%,#edf3ed 100%)}
+.login-story h1{color:#1d3e5b}
+.login-story p,.login-story small{color:#647788}
+.nav-item.active{background:#f7e9e2;color:#1d3e5b}
+.nav-item.active:after{background:#88a491}
+.sidebar-note{background:#edf2ec;color:#426452}
+.primary{background:#1d3e5b}
+.brand-lockup img{width:96px;max-height:54px;object-fit:contain}
+.brand-lockup span{color:#1d3e5b}
+.store-picker .brand-icon{background:#f8ede7;display:grid;place-items:center;overflow:hidden}
+.store-picker .brand-icon img{width:18px;height:30px;object-fit:contain}
+.store-brand{font-weight:700;font-size:13px;white-space:nowrap;color:#1d3e5b;margin-right:10px}
+@media(max-width:1050px){.store-brand{display:none}}
+
+.stamp-campaigns {display:grid;gap:10px;margin:10px 0 14px}
+.campanha-opcao {display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #dedbd7;border-radius:12px;background:#fff;cursor:pointer}
+.campanha-opcao input {width:18px;height:18px;accent-color:#244b64}
+
+/* v0.8.7: fluxo operacional sem menus redundantes */
+.voltar-inicio { margin-bottom: 16px; }
+#contexto-atendimento:not(:empty) { margin: 0 0 16px; }
