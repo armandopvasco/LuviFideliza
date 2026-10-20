@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ConviteEquipeRepository extends JpaRepository<ConviteEquipe, UUID> {
   Optional<ConviteEquipe> findByEstabelecimentoIdAndEmail(UUID estabelecimento, String email);
 
+  Optional<ConviteEquipe> findByEstabelecimentoIdAndTelefone(UUID estabelecimento, String telefone);
+
   Optional<ConviteEquipe> findByTokenHash(String hash);
 
   List<ConviteEquipe> findByEstabelecimentoIdOrderByEmail(UUID estabelecimento);

@@ -1,6 +1,7 @@
 package br.com.luvi.fideliza.autenticacao.config;
 
 import br.com.luvi.fideliza.equipe.MembroRepository;
+import br.com.luvi.fideliza.autenticacao.Telefone;
 import br.com.luvi.fideliza.usuario.UsuarioRepository;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,12 +21,11 @@ public class SecurityConfig {
 
   @Bean
   UserDetailsService users(UsuarioRepository usuarios, MembroRepository membros) {
-    return email ->
-        usuarios
-            .findByEmailIgnoreCase(email.trim())
+    return identificador ->
+        (identificador.contains("@") ? usuarios.findByEmailIgnoreCase(identificador.trim()) : usuarios.findByTelefone(Telefone.normalizar(identificador)))
             .map(
                 u ->
-                    User.withUsername(u.getEmail())
+                    User.withUsername(u.getEmail() != null ? u.getEmail() : u.getTelefone())
                         .password(u.getSenhaHash())
                         .disabled(!u.getAtivo())
                         .roles(
@@ -67,7 +67,8 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/api/v1/auth/csrf",
                         "/api/v1/auth/convites/aceitar",
-                        "/api/v1/auth/clientes")
+                        "/api/v1/auth/clientes",
+                        "/adesao.html", "/adesao.js", "/convite-whatsapp.js", "/adesao-painel.js", "/api/v1/publico/estabelecimentos/**")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
                     .hasRole("ADMIN")

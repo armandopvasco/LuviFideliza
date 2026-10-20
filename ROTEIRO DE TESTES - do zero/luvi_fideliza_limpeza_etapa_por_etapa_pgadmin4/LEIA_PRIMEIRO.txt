@@ -1,0 +1,13 @@
+LUVI Fideliza+ - limpeza gradual no pgAdmin 4
+
+ATENCAO: SCRIPT DESTRUTIVO. Faca backup do banco, pare o Spring Boot, confirme o banco de TESTES e o usuario ADM.
+
+Execute UM ARQUIVO POR VEZ, pela ordem numerica. Os arquivos 01 a 14 excluem dados com COMMIT individual. Se algum falhar, execute ROLLBACK e PARE: nao continue para os seguintes. Esses arquivos NAO desfazem etapas anteriores que ja tiveram COMMIT.
+
+00 consulta ambiente e FKs, sem excluir.
+01-14 limpam tabelas de negocio, sem TRUNCATE CASCADE.
+15 mostra usuarios e quantidade de ADMs.
+16 exclui outros usuarios, APOS editar email do ADM, com validacoes.
+17 verifica resultado e Flyway.
+
+O objetivo e descobrir qual tabela/constraint causa o erro; envie a primeira mensagem de erro e o numero da etapa. Nao tente forcar exclusao com CASCADE.

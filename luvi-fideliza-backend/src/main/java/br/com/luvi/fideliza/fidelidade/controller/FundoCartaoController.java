@@ -45,7 +45,7 @@ public class FundoCartaoController {
   @Transactional(readOnly = true)
   public ResponseEntity<byte[]> imagem(@PathVariable UUID estabelecimentoId, Authentication auth) throws java.io.IOException {
     Estabelecimento e = estabelecimento(estabelecimentoId);
-    UUID usuarioId = usuarios.findByEmailIgnoreCase(auth.getName()).filter(u -> u.getAtivo())
+    UUID usuarioId = (auth.getName().contains("@") ? usuarios.findByEmailIgnoreCase(auth.getName()) : usuarios.findByTelefone(auth.getName())).filter(u -> u.getAtivo())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).getId();
     if (!participacoes.existsByEstabelecimentoIdAndUsuarioId(estabelecimentoId, usuarioId))
       permissoes.exigirLeitura(estabelecimentoId, auth.getName());

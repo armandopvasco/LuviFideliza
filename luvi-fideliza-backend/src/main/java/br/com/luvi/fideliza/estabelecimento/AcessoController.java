@@ -18,7 +18,7 @@ public class AcessoController {
 
   public record Cadastro(@NotBlank @Size(max = 150) String nome) {}
 
-  public record Convite(@NotBlank @Email @Size(max = 254) String email) {}
+  public record Convite(@NotBlank @Size(max = 254) String email) {}
 
   public record Aceite(
       @NotBlank @Size(max = 100) String token,

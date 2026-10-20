@@ -52,8 +52,7 @@ public class AcessoEstabelecimentoService {
 
   private Usuario usuario(String email) {
     var u =
-        usuarios
-            .findByEmailIgnoreCase(email)
+        (email.contains("@") ? usuarios.findByEmailIgnoreCase(email) : usuarios.findByTelefone(email))
             .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
     if (!u.getAtivo()) throw new AccessDeniedException("Acesso negado");
     return u;
@@ -102,8 +101,9 @@ public class AcessoEstabelecimentoService {
     var admin = exigirAdmin(emailAdmin);
     if (estabelecimentos.findById(id).filter(Estabelecimento::getAtivo).isEmpty())
       throw new ResponseStatusException(NOT_FOUND, "Estabelecimento não encontrado");
-    String email = emailProprietario.trim().toLowerCase(Locale.ROOT);
-    if (usuarios.findByEmailIgnoreCase(email).isPresent())
+    if (emailProprietario.contains("@") && !emailProprietario.trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) throw new ResponseStatusException(BAD_REQUEST, "E-mail inválido");
+    String email = emailProprietario.contains("@") ? emailProprietario.trim().toLowerCase(Locale.ROOT) : Telefone.normalizar(emailProprietario);
+    if ((email.contains("@") ? usuarios.findByEmailIgnoreCase(email) : usuarios.findByTelefone(email)).isPresent())
       throw new ResponseStatusException(
           CONFLICT, "E-mail já cadastrado. Vinculação de contas existentes será entregue depois.");
     byte[] random = new byte[32];
@@ -129,7 +129,7 @@ public class AcessoEstabelecimentoService {
             .findById(c.getEstabelecimentoId())
             .filter(Estabelecimento::getAtivo)
             .orElseThrow(AcessoEstabelecimentoService::conviteInvalido);
-    if (usuarios.findByEmailIgnoreCase(c.getEmail()).isPresent())
+    if ((c.getEmail() != null ? usuarios.findByEmailIgnoreCase(c.getEmail()) : usuarios.findByTelefone(c.getTelefone())).isPresent())
       throw new ResponseStatusException(CONFLICT, "E-mail já cadastrado");
     var u =
         usuarios.save(
@@ -142,10 +142,11 @@ public class AcessoEstabelecimentoService {
                 false,
                 true,
                 agora));
+    if (c.getTelefone() != null) u.definirTelefone(c.getTelefone());
     membros.save(
         new MembroEstabelecimento(UUID.randomUUID(), u.getId(), e.getId(), "PROPRIETARIO", true));
     c.consumir(agora);
-    return new AceiteConcluido(e.getId(), e.getNome(), c.getEmail());
+    return new AceiteConcluido(e.getId(), e.getNome(), c.getContato());
   }
 
   private static ResponseStatusException conviteInvalido() {

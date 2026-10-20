@@ -23,7 +23,8 @@ public class ClienteController {
 
   public record CadastroCliente(
       @NotBlank @Size(max = 120) String nome,
-      @NotBlank @Email @Size(max = 254) String email,
+      @Email @Size(max = 254) String email,
+      String telefone,
       @NotBlank @Size(min = 12, max = 72) @Pattern(regexp = "[\\x20-\\x7E]+") String senha) {}
 
   public record ClienteCriado(UUID id, String nome, String email) {}
@@ -32,11 +33,14 @@ public class ClienteController {
   @ResponseStatus(HttpStatus.CREATED)
   @Transactional
   public ClienteCriado cadastrar(@Valid @RequestBody CadastroCliente dados) {
-    String email = dados.email().trim().toLowerCase(Locale.ROOT);
-    if (usuarios.findByEmailIgnoreCase(email).isPresent()) {
+    String email = dados.email() == null || dados.email().isBlank() ? null : dados.email().trim().toLowerCase(Locale.ROOT);
+    String telefone = Telefone.normalizar(dados.telefone());
+    if (email == null && telefone == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe telefone ou e-mail.");
+    if (email != null && usuarios.findByEmailIgnoreCase(email).isPresent()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "E-mail já cadastrado. Use o login existente.");
     }
+    if (telefone != null && usuarios.findByTelefone(telefone).isPresent()) throw new ResponseStatusException(HttpStatus.CONFLICT, "Telefone já cadastrado. Use seu login.");
     Usuario usuario =
         usuarios.save(
             new Usuario(
@@ -48,6 +52,7 @@ public class ClienteController {
                 false,
                 true,
                 Instant.now()));
+    usuario.definirTelefone(telefone);
     return new ClienteCriado(usuario.getId(), usuario.getNome(), usuario.getEmail());
   }
 }

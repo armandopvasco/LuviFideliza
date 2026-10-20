@@ -3,6 +3,7 @@ package br.com.luvi.fideliza.equipe;
 import static org.springframework.http.HttpStatus.*;
 
 import br.com.luvi.fideliza.estabelecimento.*;
+import br.com.luvi.fideliza.autenticacao.Telefone;
 import br.com.luvi.fideliza.usuario.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -39,7 +40,7 @@ public class EquipeController {
 
   public record Membro(UUID id, String nome, String email, String papel, boolean ativo) {}
 
-  public record Convidar(@NotBlank @Email @Size(max = 254) String email) {}
+  public record Convidar(@NotBlank @Size(max = 254) String email) {}
 
   public record Aceitar(@NotBlank @Size(max = 100) String token) {}
 
@@ -73,9 +74,9 @@ public class EquipeController {
       @PathVariable UUID id, @Valid @RequestBody Convidar dados, Authentication auth) {
     var dono = permissoes.exigirProprietario(id, auth.getName());
     negocio(id, true);
-    String email = dados.email().trim().toLowerCase(Locale.ROOT);
-    usuarios
-        .findByEmailIgnoreCase(email)
+    if (dados.email().contains("@") && !dados.email().trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) throw new ResponseStatusException(BAD_REQUEST, "E-mail inválido");
+    String email = dados.email().contains("@") ? dados.email().trim().toLowerCase(Locale.ROOT) : Telefone.normalizar(dados.email());
+    (email.contains("@") ? usuarios.findByEmailIgnoreCase(email) : usuarios.findByTelefone(email))
         .ifPresent(
             u -> {
               if (!u.getAtivo()) throw new ResponseStatusException(CONFLICT, "Conta desativada");
@@ -86,8 +87,7 @@ public class EquipeController {
     new SecureRandom().nextBytes(bytes);
     String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     var convite =
-        convites
-            .findByEstabelecimentoIdAndEmail(id, email)
+            (email.contains("@") ? convites.findByEstabelecimentoIdAndEmail(id, email) : convites.findByEstabelecimentoIdAndTelefone(id, email))
             .orElseGet(() -> new ConviteEquipe(id, email));
     convite.renovar(hash(token), Instant.now().plus(Duration.ofHours(48)), dono.getId());
     convites.save(convite);
@@ -104,7 +104,7 @@ public class EquipeController {
             c ->
                 new ConviteResumo(
                     c.getId(),
-                    c.getEmail(),
+                    c.getContato(),
                     c.getExpiraEm(),
                     c.getUsadoEm() != null
                         ? "ACEITO"
@@ -152,17 +152,16 @@ public class EquipeController {
   @Transactional
   public Aceito aceitar(@Valid @RequestBody Aceitar dados, Authentication auth) {
     var u =
-        usuarios
-            .findByEmailIgnoreCase(auth.getName())
+        (auth.getName().contains("@") ? usuarios.findByEmailIgnoreCase(auth.getName()) : usuarios.findByTelefone(auth.getName()))
             .filter(Usuario::getAtivo)
             .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
     String hash = hash(dados.token());
     UUID id = convites.estabelecimentoDoToken(hash).orElseThrow(EquipeController::invalido);
     var e = negocio(id, true);
     var c = convites.findByTokenHash(hash).orElseThrow(EquipeController::invalido);
-    if (!c.getEmail().equalsIgnoreCase(u.getEmail()))
+    if (!(c.getEmail() != null ? c.getEmail().equalsIgnoreCase(u.getEmail()) : c.getTelefone().equals(u.getTelefone())))
       throw new ResponseStatusException(
-          FORBIDDEN, "Entre com o e-mail para o qual o convite foi emitido");
+          FORBIDDEN, "Entre com o telefone ou e-mail para o qual o convite foi emitido");
     var anterior = membros.findByUsuarioIdAndEstabelecimentoId(u.getId(), id);
     if (c.getUsadoEm() != null) {
       if (anterior.isPresent() && anterior.get().getAtivo()) return new Aceito(e.getNome());

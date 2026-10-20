@@ -12,8 +12,11 @@ public class Usuario {
   @Column(nullable = false, length = 120)
   private String nome;
 
-  @Column(nullable = false, length = 254)
+  @Column(length = 254)
   private String email;
+
+  @Column(length = 13)
+  private String telefone;
 
   @Column(name = "senha_hash", nullable = false, length = 255)
   private String senhaHash;
@@ -58,6 +61,9 @@ public class Usuario {
   public String getNome() {
     return nome;
   }
+
+  public String getTelefone() { return telefone; }
+  public void definirTelefone(String valor) { telefone = valor; }
 
   public String getEmail() {
     return email;

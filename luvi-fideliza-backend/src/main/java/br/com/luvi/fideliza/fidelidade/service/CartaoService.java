@@ -325,8 +325,7 @@ public class CartaoService {
   }
 
   private Usuario usuario(String email) {
-    return usuarios
-        .findByEmailIgnoreCase(email)
+    return (email.contains("@") ? usuarios.findByEmailIgnoreCase(email) : usuarios.findByTelefone(email))
         .filter(Usuario::getAtivo)
         .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
   }

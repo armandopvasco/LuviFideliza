@@ -17,6 +17,9 @@ public class ConviteEquipe {
   @Column(nullable = false, length = 254)
   private String email;
 
+  @Column(length = 13)
+  private String telefone;
+
   @Column(name = "token_hash", nullable = false, unique = true, length = 64)
   private String tokenHash;
 
@@ -34,7 +37,8 @@ public class ConviteEquipe {
   public ConviteEquipe(UUID estabelecimento, String email) {
     this.id = UUID.randomUUID();
     this.estabelecimentoId = estabelecimento;
-    this.email = email;
+    this.email = email != null && email.contains("@") ? email : null;
+    this.telefone = email != null && !email.contains("@") ? email : null;
   }
 
   public void renovar(String hash, Instant expira, UUID autor) {
@@ -59,6 +63,9 @@ public class ConviteEquipe {
   public UUID getEstabelecimentoId() {
     return estabelecimentoId;
   }
+
+  public String getContato() { return email != null ? email : telefone; }
+  public String getTelefone() { return telefone; }
 
   public String getEmail() {
     return email;

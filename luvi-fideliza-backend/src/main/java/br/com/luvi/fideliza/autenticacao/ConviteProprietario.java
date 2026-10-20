@@ -15,6 +15,9 @@ public class ConviteProprietario {
   @Column(nullable = false, length = 254)
   private String email;
 
+  @Column(length = 13)
+  private String telefone;
+
   @Column(name = "token_hash", nullable = false, unique = true, length = 64)
   private String tokenHash;
 
@@ -39,7 +42,8 @@ public class ConviteProprietario {
       UUID criadoPor) {
     this.id = id;
     this.estabelecimentoId = estabelecimentoId;
-    this.email = email;
+    this.email = email != null && email.contains("@") ? email : null;
+    this.telefone = email != null && !email.contains("@") ? email : null;
     this.tokenHash = tokenHash;
     this.expiraEm = expiraEm;
     this.usadoEm = usadoEm;
@@ -53,6 +57,9 @@ public class ConviteProprietario {
   public UUID getEstabelecimentoId() {
     return estabelecimentoId;
   }
+
+  public String getContato() { return email != null ? email : telefone; }
+  public String getTelefone() { return telefone; }
 
   public String getEmail() {
     return email;

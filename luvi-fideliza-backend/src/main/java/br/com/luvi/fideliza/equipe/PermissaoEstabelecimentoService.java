@@ -47,8 +47,7 @@ public class PermissaoEstabelecimentoService {
   }
 
   private Usuario usuarioAtivo(String email) {
-    return usuarios
-        .findByEmailIgnoreCase(email)
+    return (email.contains("@") ? usuarios.findByEmailIgnoreCase(email) : usuarios.findByTelefone(email))
         .filter(Usuario::getAtivo)
         .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
   }

@@ -401,7 +401,7 @@ function gerarUUIDSeguro() {
   $("equipe-email").addEventListener("input", () => $("equipe-email").setCustomValidity(""));
   $("form-equipe").onsubmit = e => { e.preventDefault(); executar(async () => { const campo = $("equipe-email"); campo.setCustomValidity("");
     try { linkConvite("equipe", await api(raiz() + "/equipe/convites", json({ email: campo.value.trim() }))); }
-    catch (erro) { if (erro.status === 409) { campo.setCustomValidity(erro.message.includes("desativada") ? "Esta conta está desativada." : "Este funcionário já está cadastrado na equipe."); campo.focus(); campo.reportValidity(); return; } throw erro; } notificar("Convite da equipe gerado. A pessoa deve entrar com esse mesmo e-mail e aceitar o vínculo.", false, "equipe-aviso"); await carregarEquipe(); }, "equipe-aviso"); };
+    catch (erro) { if (erro.status === 409) { campo.setCustomValidity(erro.message.includes("desativada") ? "Esta conta está desativada." : "Este funcionário já está cadastrado na equipe."); campo.focus(); campo.reportValidity(); return; } throw erro; } notificar("Convite da equipe gerado. A pessoa deve entrar com esse mesmo telefone ou e-mail e aceitar o vínculo.", false, "equipe-aviso"); await carregarEquipe(); }, "equipe-aviso"); };
   const cargas = { clientes: carregarClientes, recompensas: carregarRecompensas, cartoes: () => carregarDetalhe("cartoes"), historico: () => carregarDetalhe("historico"), beneficios: () => carregarDetalhe("beneficios") };
   Object.keys(cargas).forEach(tipo => ["anterior", "proxima"].forEach(direcao => $(tipo + "-" + direcao).onclick = () => executar(async () => {
     const anterior = state.paginas[tipo]; state.paginas[tipo] += direcao === "anterior" ? -1 : 1;

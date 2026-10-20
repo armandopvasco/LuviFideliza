@@ -51,7 +51,7 @@ public class CampanhaController {
   public VisualCartao visualCartao(@PathVariable UUID estabelecimentoId, Authentication auth) {
     Estabelecimento e = estabelecimento(estabelecimentoId);
     // Disponível somente para usuários autenticados que participam deste estabelecimento.
-    UUID usuarioId = usuarios.findByEmailIgnoreCase(auth.getName())
+    UUID usuarioId = (auth.getName().contains("@") ? usuarios.findByEmailIgnoreCase(auth.getName()) : usuarios.findByTelefone(auth.getName()))
         .filter(u -> u.getAtivo()).orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).getId();
     if (!participacoes.existsByEstabelecimentoIdAndUsuarioId(estabelecimentoId, usuarioId)) {
       permissoes.exigirLeitura(estabelecimentoId, auth.getName());
@@ -85,7 +85,7 @@ public class CampanhaController {
   public List<CampanhaCliente> campanhasCliente(@PathVariable UUID estabelecimentoId,
       Authentication auth) {
     Estabelecimento e = estabelecimento(estabelecimentoId);
-    UUID usuarioId = usuarios.findByEmailIgnoreCase(auth.getName())
+    UUID usuarioId = (auth.getName().contains("@") ? usuarios.findByEmailIgnoreCase(auth.getName()) : usuarios.findByTelefone(auth.getName()))
         .filter(u -> u.getAtivo()).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.FORBIDDEN)).getId();
     // A vitrine só é visível para clientes já vinculados ao estabelecimento.
