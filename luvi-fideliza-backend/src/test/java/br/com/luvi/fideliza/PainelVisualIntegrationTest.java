@@ -240,6 +240,10 @@ class PainelVisualIntegrationTest {
             .getResponse()
             .getContentAsString();
     String recompensa = json.readTree(lista).get("conteudo").get(0).get("id").asText();
+    mvc.perform(get(base() + "/recompensas/" + recompensa).with(user("dono@teste.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.descricao").value("Um café"))
+        .andExpect(jsonPath("$.status").value("DISPONIVEL"));
     UUID chave = UUID.randomUUID();
     for (int esperado : new int[] {201, 200})
       mvc.perform(

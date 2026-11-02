@@ -29,6 +29,14 @@ public class RecompensaController {
                 id, participacao, pagina, tamanho, usuario.getName());
     }
 
+    @GetMapping("/api/v1/estabelecimentos/{id}/recompensas/{recompensa}")
+    public RecompensaService.Resposta consultar(
+            @PathVariable UUID id,
+            @PathVariable UUID recompensa,
+            Authentication usuario) {
+        return service.consultar(id, recompensa, usuario.getName());
+    }
+
     @PostMapping(
             "/api/v1/estabelecimentos/{id}/recompensas/{recompensa}/resgate"
     )
