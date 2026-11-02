@@ -83,8 +83,12 @@ class CartaoIntegrationTest {
   }
 
   private Cadastro cadastro() {
+    return cadastro("81999990004");
+  }
+
+  private Cadastro cadastro(String whatsapp) {
     return service
-        .cadastrar(negocio, UUID.randomUUID(), "Cliente piloto", "81999990004", "dono@teste.local")
+        .cadastrar(negocio, UUID.randomUUID(), "Cliente piloto", whatsapp, "dono@teste.local")
         .dados();
   }
 
@@ -123,7 +127,7 @@ class CartaoIntegrationTest {
   @Test
   void mesmaChaveComOutraCompraOuParticipanteDaConflito() {
     UUID p = cadastro().participante().id(),
-        outroParticipante = cadastro().participante().id(),
+        outroParticipante = cadastro("81999990006").participante().id(),
         chave = UUID.randomUUID();
     service.creditar(negocio, p, chave, "Compra 1", "dono@teste.local");
     assertEquals(
@@ -206,7 +210,7 @@ class CartaoIntegrationTest {
     assertThrows(
         ResponseStatusException.class, () -> service.aceitar(velho.token(), "cliente@teste.local"));
     service.aceitar(novo.token(), "cliente@teste.local");
-    UUID duplicado = cadastro().participante().id();
+    UUID duplicado = cadastro("81999990007").participante().id();
     var outroConvite = service.convidar(negocio, duplicado, "dono@teste.local");
     assertEquals(
         409,
@@ -336,5 +340,36 @@ class CartaoIntegrationTest {
         .andExpect(jsonPath("$.perfis[0]").value("ROLE_CLIENTE"));
     assertFalse(
         usuarios.findByEmailIgnoreCase("novo@teste.local").orElseThrow().getEmailVerificado());
+  }
+
+  @Test
+  void atendimentoRapidoCadastraNaPrimeiraVisitaENaoDuplicaOCarimbo() {
+    UUID chave = UUID.randomUUID();
+    ResponseStatusException semNome =
+        assertThrows(
+            ResponseStatusException.class,
+            () ->
+                service.atenderPorWhatsapp(
+                    negocio, chave, "81988887777", "  ", null, "dono@teste.local"));
+    assertEquals(422, semNome.getStatusCode().value());
+
+    var criado =
+        service.atenderPorWhatsapp(negocio, chave, "81988887777", "Ana", List.of(), "dono@teste.local");
+    assertTrue(criado.cadastrado());
+    assertEquals(1, criado.carimbos().size());
+    assertEquals(1, criado.carimbos().get(0).saldoApos());
+
+    var repetido =
+        service.atenderPorWhatsapp(
+            negocio, chave, "(81) 98888-7777", "Outro nome", null, "funcionario@teste.local");
+    assertFalse(repetido.cadastrado());
+    assertEquals(criado.carimbos().get(0).id(), repetido.carimbos().get(0).id());
+    assertEquals(1, service.participantes(negocio, 0, 20, "dono@teste.local").total());
+
+    var seguinte =
+        service.atenderPorWhatsapp(
+            negocio, UUID.randomUUID(), "81988887777", null, null, "funcionario@teste.local");
+    assertFalse(seguinte.cadastrado());
+    assertEquals(2, seguinte.carimbos().get(0).saldoApos());
   }
 }

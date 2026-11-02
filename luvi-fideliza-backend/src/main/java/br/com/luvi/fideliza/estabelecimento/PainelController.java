@@ -1,13 +1,12 @@
 package br.com.luvi.fideliza.estabelecimento;
 
 import br.com.luvi.fideliza.equipe.MembroRepository;
+import br.com.luvi.fideliza.equipe.PermissaoEstabelecimentoService;
 import br.com.luvi.fideliza.usuario.Usuario;
-import br.com.luvi.fideliza.usuario.UsuarioRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,17 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PainelController {
 
-    private final UsuarioRepository usuarios;
     private final MembroRepository membros;
+    private final PermissaoEstabelecimentoService permissoes;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     public PainelController(
-            UsuarioRepository usuarios,
-            MembroRepository membros) {
-        this.usuarios = usuarios;
+            MembroRepository membros,
+            PermissaoEstabelecimentoService permissoes) {
         this.membros = membros;
+        this.permissoes = permissoes;
     }
 
     public record Negocio(
@@ -39,10 +38,7 @@ public class PainelController {
     @Transactional(readOnly = true)
     public List<Negocio> estabelecimentos(Authentication autenticacao) {
 
-        Usuario usuario = usuarios
-                .findByEmailIgnoreCase(autenticacao.getName())
-                .filter(Usuario::getAtivo)
-                .orElseThrow(() -> new AccessDeniedException("Acesso negado"));
+        Usuario usuario = permissoes.usuarioAtivo(autenticacao.getName());
 
         List<Estabelecimento> estabelecimentos;
 

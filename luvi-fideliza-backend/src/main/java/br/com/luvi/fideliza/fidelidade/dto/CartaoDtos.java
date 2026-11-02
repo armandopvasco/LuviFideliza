@@ -10,6 +10,13 @@ public final class CartaoDtos {
 
   public record CadastrarParticipante(@NotBlank @Size(max = 120) String nomeExibicao, @NotBlank String whatsapp) {}
 
+  public record PedidoAtendimento(
+      @NotBlank String whatsapp,
+      @Size(max = 120) String nome,
+      @Size(max = 20) List<@NotNull UUID> campanhas) {}
+
+  public record AtendimentoRapido(Participante participante, List<Carimbo> carimbos, boolean cadastrado) {}
+
   public record RegistrarCarimbo(@NotBlank @Size(max = 120) String referenciaCompra) {}
 
   public record AceitarConvite(@NotBlank @Size(max = 100) String token) {}

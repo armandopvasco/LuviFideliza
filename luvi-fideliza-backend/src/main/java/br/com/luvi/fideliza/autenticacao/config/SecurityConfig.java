@@ -3,13 +3,17 @@ package br.com.luvi.fideliza.autenticacao.config;
 import br.com.luvi.fideliza.equipe.MembroRepository;
 import br.com.luvi.fideliza.autenticacao.Telefone;
 import br.com.luvi.fideliza.usuario.UsuarioRepository;
+import br.com.luvi.fideliza.autenticacao.TokenAutenticacaoFilter;
+import br.com.luvi.fideliza.autenticacao.TokenService;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -39,7 +43,23 @@ public class SecurityConfig {
   }
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokens) throws Exception {
+    http.addFilterBefore(new TokenAutenticacaoFilter(tokens), UsernamePasswordAuthenticationFilter.class);
+    http.csrf(
+        csrf ->
+            csrf.ignoringRequestMatchers(
+                request -> {
+                  String servlet = request.getServletPath();
+                  String uri = request.getRequestURI();
+                  boolean token =
+                      (servlet != null && servlet.endsWith("/api/v1/auth/token"))
+                          || (uri != null && uri.endsWith("/api/v1/auth/token"));
+                  if (HttpMethod.POST.matches(request.getMethod()) && token) return true;
+                  String autorizacao = request.getHeader("Authorization");
+                  if (autorizacao != null && autorizacao.regionMatches(true, 0, "Bearer ", 0, 7))
+                    return true;
+                  return "1".equals(request.getHeader("X-Luvi-App"));
+                }));
     http.authorizeHttpRequests(
             a ->
                 a.requestMatchers(
@@ -68,7 +88,10 @@ public class SecurityConfig {
                         "/api/v1/auth/csrf",
                         "/api/v1/auth/convites/aceitar",
                         "/api/v1/auth/clientes",
+                        "/luvi-tokens.css",
                         "/adesao.html", "/adesao.js", "/convite-whatsapp.js", "/adesao-painel.js", "/api/v1/publico/estabelecimentos/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/token")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
                     .hasRole("ADMIN")

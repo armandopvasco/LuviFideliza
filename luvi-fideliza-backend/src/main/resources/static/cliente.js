@@ -10,7 +10,8 @@
   const total=Math.min(100,Math.max(1,Number(c.metaCarimbos)||1));const saldo=Math.max(0,Number(c.saldo)||0);
   for(let i=0;i<total;i++){const bolinha=document.createElement('span');bolinha.className='carimbo'+(i<saldo?' marcado':'');if(i<saldo)bolinha.textContent='✓';else window.LuviCartao.desenharIcone(bolinha,visual);bolinha.setAttribute('aria-hidden','true');grade.append(bolinha)}
   const status=document.createElement('p');status.className='cartao-status';status.textContent=c.saldo+' de '+c.metaCarimbos+' carimbos · '+c.status;
-  box.append(loja,h,premio,grade,status);// Renderizar o cartão primeiro; um erro no aviso não pode ocultar os carimbos.
+  box.append(loja,h,premio,grade,status);
+  const qrCliente=document.createElement('img');qrCliente.className='qr-cliente';qrCliente.alt='QR Code para mostrar no balcão';qrCliente.src='/api/v1/me/participacoes/'+encodeURIComponent(c.participacaoId)+'/qrcode';box.append(qrCliente);// Renderizar o cartão primeiro; um erro no aviso não pode ocultar os carimbos.
   area.append(box);
   try {
     const recompensaDoCartao = premios.find(r => String(r.cartaoId) === String(c.id));
@@ -29,6 +30,9 @@
       const titulo = document.createElement('strong'); titulo.textContent = resgatada ? 'Recompensa resgatada' : 'Parabéns! Você completou seu cartão!';
       const detalhe = document.createElement('p'); detalhe.textContent = resgatada ? 'Este benefício já foi entregue pelo estabelecimento.' : 'Seu prêmio está disponível: ' + c.recompensa + '. Apresente este cartão ao estabelecimento para receber sua recompensa.';
       conteudo.append(titulo,detalhe); faixa.append(presente,conteudo); box.append(faixa);
+      if (disponivel && recompensaDoCartao) {
+        const qrPremio=document.createElement('img');qrPremio.className='qr-cliente';qrPremio.alt='QR Code da recompensa para o balcão confirmar a entrega';qrPremio.src='/api/v1/me/recompensas/'+encodeURIComponent(recompensaDoCartao.id)+'/qrcode';box.append(qrPremio);
+      }
     }
   } catch (erroAviso) { console.error('Falha ao exibir recompensa do cartão', c.id, erroAviso); }
 }

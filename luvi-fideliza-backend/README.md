@@ -1,49 +1,35 @@
-# LUVI Fideliza+ — backend 0.4
+# LUVI Fideliza+
 
-Java 17, Spring Boot 3.5.6, PostgreSQL, Maven e Flyway.
+Cartão de fidelidade para o pequeno comércio. O comerciante usa o painel web. O cliente usa o aplicativo Flutter ou a página `cliente.html`.
 
-Nesta entrega: participantes, ciclos de cartão, carimbos idempotentes,
-conta do consumidor, convite de vínculo e carteira da própria conta.
+O backend é Java 17, Spring Boot 3.5, PostgreSQL, Maven e Flyway. A versão de tela do painel é 0.9.0.
 
-**Já está com a 0.3 funcionando? Comece por docs/TESTAR_0.4.md.**
-Não recrie os usuários nem os estabelecimentos. Use o banco existente e
-mantenha LUVI_FIDELIZA_BOOTSTRAP_ENABLED=false.
+## O que o produto faz
 
-## Executar localmente
-Abra o pom.xml no IntelliJ, selecione JDK 17 e configure:
-- LUVI_FIDELIZA_DB_URL=jdbc:postgresql://localhost:5432/luvi_fideliza
-- LUVI_FIDELIZA_DB_USER=luvi_fideliza_app
-- LUVI_FIDELIZA_DB_PASSWORD=sua senha do banco
+- O proprietário define o programa (meta de carimbos e recompensa) e convida a equipe.
+- No balcão, o WhatsApp localiza o cliente e registra o carimbo. A primeira visita pede o nome e abre o cartão.
+- Ao completar a meta, a recompensa fica disponível e o balcão confirma a entrega.
+- O QR da loja leva o cliente à adesão. O QR do cliente abre o atendimento no painel. O QR da recompensa abre a confirmação de entrega.
+- O aplicativo do cliente entra com token, adere pelo QR da loja e mostra os cartões. O painel continua entrando por cookie de sessão.
 
-Execute LuviFidelizaApplication; porta padrão 8081.
-Flyway executa só as migrações pendentes. V1 a V3 não foram alteradas.
-Para uma instalação do zero, crie um banco próprio e habilite temporariamente
-SPRING_PROFILES_ACTIVE=local, LUVI_FIDELIZA_BOOTSTRAP_ENABLED=true,
-LUVI_FIDELIZA_ADMIN_EMAIL e LUVI_FIDELIZA_ADMIN_PASSWORD.
-Após criar o administrador, desative o bootstrap e retire suas credenciais iniciais.
-Não há senha padrão. Nunca salve credenciais no Git.
+## Executar o backend
 
-## Regras do módulo
-- Nome do participante é local ao negócio; nomes iguais não identificam uma pessoa.
-- Um cartão é criado sem conta vinculada; depois o consumidor aceita o convite com sua conta.
-- A chave UUID do cadastro evita repetir o mesmo envio criando duas participações.
-- Uma conta só pode ter uma participação por programa, mas pode frequentar vários negócios.
-- Um carimbo por compra registrada. Mesma chave e dados repetidos não duplicam o saldo.
-- Chave repetida com outros dados retorna 409.
-- Cartão guarda a versão das regras da abertura. Alterações valem para ciclos novos.
-- Ciclos completos ficam preservados; a compra seguinte abre o próximo ciclo.
-- Recompensas e resgates, estornos e junção de cadastros serão entregas posteriores.
+Abra o `pom.xml` no IntelliJ, selecione JDK 17 e configure:
 
-## Testar
+- `LUVI_FIDELIZA_DB_URL=jdbc:postgresql://localhost:5432/luvi_fideliza`
+- `LUVI_FIDELIZA_DB_USER=luvi_fideliza_app`
+- `LUVI_FIDELIZA_DB_PASSWORD` com a senha do banco
+
+Execute `LuviFidelizaApplication`. A porta padrão é 8081. O painel fica em `http://localhost:8081/painel.html`.
+
+Para o QR apontar para um endereço que o celular alcança, defina `LUVI_PUBLIC_URL` (por exemplo `http://192.168.0.10:8081`). Sem essa variável, o QR usa o endereço do próprio pedido.
+
+O aplicativo do cliente está em `../luvi-fideliza-cliente`. Ele chama `POST /api/v1/auth/token` e envia `Authorization: Bearer` nas rotas `/api/v1/me/**`.
+
+## Testes
+
 ```bash
-mvn clean package
+mvn test
 ```
-A coleção completa está em docs/LUVI_Fideliza_0.4.postman_collection.json.
-As coleções antigas permanecem para referência, mas use a 0.4 nos novos testes.
-O roteiro começa com seus cadastros existentes e não exige repetir itens 01 a 15.
 
-## Operação
-Tudo local. Nenhum domínio ou servidor foi alterado.
-Estes fluxos ainda não incluem controles necessários para publicação, como
-recuperação/verificação de conta, limites de tentativas e regras comerciais de assinatura.
-A estratégia de lock serializa gravações por estabelecimento para o volume do piloto.
+Os roteiros manuais antigos continuam em `docs/`. Eles descrevem entregas anteriores e não substituem este fluxo.

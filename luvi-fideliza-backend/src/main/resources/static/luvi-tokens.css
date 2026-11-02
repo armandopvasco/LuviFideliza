@@ -1,0 +1,11 @@
+:root{
+  --paper:#fcfaf8;
+  --ink:#1d3e5b;
+  --muted:#647788;
+  --brand:#1d3e5b;
+  --brand-soft:#f7e9e2;
+  --border:#e9e3df;
+  --surface:#fff;
+  --radius:13px;
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+}

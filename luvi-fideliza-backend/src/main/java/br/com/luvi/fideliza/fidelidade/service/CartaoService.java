@@ -87,6 +87,51 @@ public class CartaoService {
   }
 
   @Transactional
+  public AtendimentoRapido atenderPorWhatsapp(
+      UUID negocio, UUID chave, String whatsapp, String nome, List<UUID> campanhas, String email) {
+    String telefone = normalizarWhatsapp(whatsapp);
+    String nomeLimpo = nome == null ? "" : nome.trim();
+    permissoes.exigirOperacao(negocio, email);
+    estabelecimento(negocio, false);
+    Optional<Participacao> existente =
+        participacoes.findFirstByEstabelecimentoIdAndWhatsappOrderByCriadoEmAsc(negocio, telefone);
+    Participacao participante;
+    boolean cadastrado = false;
+    if (existente.isEmpty()) {
+      if (nomeLimpo.isEmpty()) {
+        throw new ResponseStatusException(UNPROCESSABLE_ENTITY, "Informe o nome do cliente");
+      }
+      Resultado<Cadastro> criado = cadastrar(negocio, chave, nomeLimpo, telefone, email);
+      participante = participacoes.findById(criado.dados().participante().id()).orElseThrow();
+      cadastrado = !criado.repetido();
+    } else {
+      participante = existente.get();
+    }
+    List<Carimbo> carimbos =
+        creditarCampanhas(negocio, participante.getId(), chave, resolverCampanhas(negocio, campanhas), email);
+    return new AtendimentoRapido(participante(participante), carimbos, cadastrado);
+  }
+
+  private static boolean contemNulo(List<?> itens) {
+    for (Object item : itens) if (item == null) return true;
+    return false;
+  }
+
+  private List<UUID> resolverCampanhas(UUID negocio, List<UUID> pedidas) {
+    if (pedidas != null && !pedidas.isEmpty()) return pedidas;
+    List<ProgramaFidelidade> ativas =
+        programas.findByEstabelecimentoIdOrderByCriadoEmAsc(negocio).stream()
+            .filter(ProgramaFidelidade::isAtiva)
+            .toList();
+    if (ativas.size() == 1) return List.of(ativas.get(0).getId());
+    ProgramaFidelidade principal = programa(negocio);
+    if (!principal.isAtiva()) {
+      throw new ResponseStatusException(CONFLICT, "Nenhuma campanha ativa para carimbar");
+    }
+    return List.of(principal.getId());
+  }
+
+  @Transactional
   public Convite convidar(UUID negocio, UUID participacao, String email) {
     permissoes.exigirOperacao(negocio, email);
     estabelecimento(negocio, true);
@@ -162,8 +207,8 @@ public class CartaoService {
   @Transactional
   public List<Carimbo> creditarCampanhas(UUID negocio, UUID participanteId, UUID chaveAtendimento,
       List<UUID> campanhas, String email) {
-    if (campanhas == null || campanhas.isEmpty() || campanhas.size() > 20 ||
-        new HashSet<>(campanhas).size() != campanhas.size() || campanhas.contains(null))
+    if (campanhas == null || campanhas.isEmpty() || campanhas.size() > 20 || contemNulo(campanhas)
+        || new HashSet<>(campanhas).size() != campanhas.size())
       throw new ResponseStatusException(BAD_REQUEST, "Selecione de 1 a 20 campanhas distintas");
     UUID autor = permissoes.exigirOperacao(negocio, email).getId();
     estabelecimento(negocio, true);
