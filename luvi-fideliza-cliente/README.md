@@ -2,7 +2,7 @@
 
 Carteira LUVI Fideliza+. O cliente entra com WhatsApp ou e-mail, adere a uma loja pelo QR do balcão e mostra o QR pessoal para receber o carimbo. A recompensa pronta tem o próprio QR para o estabelecimento confirmar a entrega.
 
-O comerciante continua no painel web. Este aplicativo não registra carimbos.
+O atendente usa o aplicativo do balcão no celular. Este aplicativo do cliente não registra carimbos.
 
 ## Executar
 

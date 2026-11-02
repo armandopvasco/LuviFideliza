@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -81,6 +82,28 @@ class LuviHttp implements LuviApi {
   }
 
   @override
+  Future<VisualCartao> visual(String lojaId) async {
+    final dados = await _enviar('GET', '/api/v1/estabelecimentos/$lojaId/visual-cartao', null);
+    return VisualCartao(
+      corCartao: '${dados['corCartao'] ?? '#30475A'}',
+      corCarimbo: '${dados['corCarimbo'] ?? '#87A18F'}',
+      icone: '${dados['iconeCarimbo'] ?? 'estrela'}',
+      temFoto: dados['fotoFundoCartao'] == true,
+    );
+  }
+
+  @override
+  Future<List<int>?> fundo(String lojaId) async {
+    final uri = Uri.parse('$_raiz/api/v1/estabelecimentos/$lojaId/fundo-cartao');
+    final resposta = await cliente.get(uri, headers: {
+      'X-Luvi-App': '1',
+      if (_token != null) 'Authorization': 'Bearer $_token',
+    });
+    if (resposta.statusCode != 200 || resposta.bodyBytes.isEmpty) return null;
+    return resposta.bodyBytes;
+  }
+
+  @override
   Future<List<RecompensaCliente>> recompensas() async {
     final dados = await _enviar('GET', '/api/v1/me/recompensas?tamanho=100', null);
     final lista = (dados['conteudo'] as List?) ?? const [];
@@ -96,15 +119,26 @@ class LuviHttp implements LuviApi {
   }
 
   @override
-  Future<String> urlQrParticipacao(String participacaoId) async {
-    final dados = await _enviar('GET', '/api/v1/me/participacoes/$participacaoId/qr', null);
-    return dados['url'] as String;
+  Future<Uint8List> pngQrParticipacao(String participacaoId) {
+    return _png('/api/v1/me/participacoes/$participacaoId/qrcode');
   }
 
   @override
-  Future<String> urlQrRecompensa(String recompensaId) async {
-    final dados = await _enviar('GET', '/api/v1/me/recompensas/$recompensaId/qr', null);
-    return dados['url'] as String;
+  Future<Uint8List> pngQrRecompensa(String recompensaId) {
+    return _png('/api/v1/me/recompensas/$recompensaId/qrcode');
+  }
+
+  Future<Uint8List> _png(String caminho) async {
+    final uri = Uri.parse('$_raiz$caminho');
+    final resposta = await cliente.get(uri, headers: {
+      'Accept': 'image/png',
+      'X-Luvi-App': '1',
+      if (_token != null) 'Authorization': 'Bearer $_token',
+    });
+    if (resposta.statusCode >= 400 || resposta.bodyBytes.isEmpty) {
+      throw Exception('Não foi possível gerar o QR Code.');
+    }
+    return resposta.bodyBytes;
   }
 
   @override

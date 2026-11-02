@@ -79,6 +79,19 @@ public class RecompensaService {
                 cartao.getConcluidoEm()));
     }
 
+    @Transactional(readOnly = true)
+    public Resposta consultar(UUID estabelecimentoId, UUID recompensaId, String email) {
+        permissoes.exigirLeitura(estabelecimentoId, email);
+        estabelecimentoAtivo(estabelecimentoId, false);
+        Recompensa recompensa = recompensas
+                .findById(recompensaId)
+                .filter(r -> r.getEstabelecimentoId().equals(estabelecimentoId))
+                .orElseThrow(() -> new ResponseStatusException(
+                        NOT_FOUND,
+                        "Recompensa não encontrada neste estabelecimento"));
+        return resposta(recompensa);
+    }
+
     @Transactional
     public Resultado<Resposta> resgatar(
             UUID estabelecimentoId,
