@@ -155,7 +155,7 @@ class _CarteiraPageState extends State<CarteiraPage> {
             ),
       bottomNavigationBar: Material(
         elevation: 8,
-        color: const Color(0xFFF7FBFD),
+        color: superficie,
         child: SafeArea(
           child: SizedBox(
             height: 72,
