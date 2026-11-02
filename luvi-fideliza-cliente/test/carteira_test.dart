@@ -23,9 +23,11 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Entrar'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Cliente teste'), findsOneWidget);
     expect(find.text('Cortes'), findsOneWidget);
     expect(find.text('2 de 5 carimbos'), findsOneWidget);
-    await tester.tap(find.text('Mostrar QR'));
+    expect(find.text('Mostrar QR'), findsNothing);
+    await tester.tap(find.text('QR Code'));
     await tester.pumpAndSettle();
     expect(find.text('Mostre este QR no balcão para receber o carimbo.'), findsOneWidget);
   });

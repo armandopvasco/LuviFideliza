@@ -3,20 +3,31 @@ import 'modelos.dart';
 abstract class Sessao {
   Future<String?> ler();
   Future<void> salvar(String token);
+  Future<String?> lerNome();
+  Future<void> salvarNome(String nome);
   Future<void> limpar();
 }
 
 class SessaoMemoria implements Sessao {
   String? valor;
+  String? nome;
   @override
-  Future<void> limpar() async => valor = null;
+  Future<void> limpar() async {
+    valor = null;
+    nome = null;
+  }
   @override
   Future<String?> ler() async => valor;
   @override
+  Future<String?> lerNome() async => nome;
+  @override
   Future<void> salvar(String token) async => valor = token;
+  @override
+  Future<void> salvarNome(String nome) async => this.nome = nome;
 }
 
 abstract class LuviApi {
+  String get nome;
   Future<bool> restaurar();
   Future<void> entrar(String identificador, String senha);
   Future<void> cadastrar({
@@ -38,6 +49,8 @@ class ApiMemoria implements LuviApi {
   final Sessao? sessao;
   bool dentro = false;
   String? loja;
+  @override
+  String nome = '';
   var cartoesFixos = const <CartaoCliente>[
     CartaoCliente(
       id: 'cartao-1',
@@ -70,7 +83,9 @@ class ApiMemoria implements LuviApi {
   Future<void> entrar(String identificador, String senha) async {
     if (senha.length < 12) throw Exception('Senha inválida');
     dentro = true;
+    nome = 'Cliente teste';
     await sessao?.salvar('token-teste');
+    await sessao?.salvarNome(nome);
   }
 
   @override
@@ -79,6 +94,7 @@ class ApiMemoria implements LuviApi {
   @override
   Future<bool> restaurar() async {
     final token = await sessao?.ler();
+    nome = await sessao?.lerNome() ?? '';
     dentro = token != null && token.isNotEmpty;
     return dentro;
   }
@@ -86,6 +102,7 @@ class ApiMemoria implements LuviApi {
   @override
   Future<void> sair() async {
     dentro = false;
+    nome = '';
     await sessao?.limpar();
   }
 

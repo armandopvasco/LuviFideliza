@@ -13,12 +13,17 @@ class LuviHttp implements LuviApi {
   final Sessao sessao;
   final http.Client cliente;
   String? _token;
+  String _nome = '';
+
+  @override
+  String get nome => _nome;
 
   String get _raiz => base.endsWith('/') ? base.substring(0, base.length - 1) : base;
 
   @override
   Future<bool> restaurar() async {
     _token = await sessao.ler();
+    _nome = await sessao.lerNome() ?? '';
     return _token != null && _token!.isNotEmpty;
   }
 
@@ -29,7 +34,10 @@ class LuviHttp implements LuviApi {
       'senha': senha,
     }, autenticado: false);
     _token = dados['token'] as String;
+    final recebido = dados['nome'];
+    _nome = recebido is String && recebido.trim().isNotEmpty ? recebido.trim() : identificador.trim();
     await sessao.salvar(_token!);
+    await sessao.salvarNome(_nome);
   }
 
   @override
@@ -107,6 +115,7 @@ class LuviHttp implements LuviApi {
       } catch (_) {}
     }
     _token = null;
+    _nome = '';
     await sessao.limpar();
   }
 
