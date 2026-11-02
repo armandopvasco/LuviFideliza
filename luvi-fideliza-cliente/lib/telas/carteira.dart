@@ -101,17 +101,17 @@ class _CarteiraPageState extends State<CarteiraPage> {
       if (escolhido == null || !mounted) return;
       cartao = escolhido;
     }
-    final url = await widget.api.urlQrParticipacao(cartao.participacaoId);
+    final png = await widget.api.pngQrParticipacao(cartao.participacaoId);
     final premio = _premioDe(cartao);
-    final urlPremio = premio == null ? null : await widget.api.urlQrRecompensa(premio.id);
+    final pngPremio = premio == null ? null : await widget.api.pngQrRecompensa(premio.id);
     if (!mounted) return;
     await Navigator.push(context, MaterialPageRoute(builder: (_) => QrTela(
       titulo: 'QR do cliente',
       legenda: 'Mostre este QR no balcão para receber o carimbo.',
-      url: url,
-      tituloExtra: urlPremio == null ? null : 'QR da recompensa',
-      legendaExtra: urlPremio == null ? null : 'Mostre este QR para o estabelecimento confirmar a entrega.',
-      urlExtra: urlPremio,
+      png: png,
+      tituloExtra: pngPremio == null ? null : 'QR da recompensa',
+      legendaExtra: pngPremio == null ? null : 'Mostre este QR para o estabelecimento confirmar a entrega.',
+      pngExtra: pngPremio,
     )));
   }
 

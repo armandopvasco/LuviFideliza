@@ -1,10 +1,6 @@
 package br.com.luvi.fideliza.estabelecimento;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.qrcode.QRCodeWriter;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.CacheControl;
@@ -42,14 +38,11 @@ public class QrLinks {
 
   public ResponseEntity<byte[]> png(String url) {
     try {
-      var matrix = new QRCodeWriter().encode(url, BarcodeFormat.QR_CODE, 360, 360);
-      var bytes = new ByteArrayOutputStream();
-      MatrixToImageWriter.writeToStream(matrix, "PNG", bytes);
       return ResponseEntity.ok()
           .cacheControl(CacheControl.noStore())
           .contentType(MediaType.IMAGE_PNG)
-          .body(bytes.toByteArray());
-    } catch (Exception ex) {
+          .body(QrModerno.png(url));
+    } catch (RuntimeException ex) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possível gerar o QR Code");
     }
   }
