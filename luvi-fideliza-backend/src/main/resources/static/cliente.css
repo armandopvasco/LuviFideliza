@@ -1,4 +1,4 @@
-:root{font-family:system-ui,-apple-system,sans-serif;color:#30475a;background:#f8f7f4}*{box-sizing:border-box}body{margin:0}header{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:16px 22px;border-bottom:1px solid #e3e7e4}.brand{display:flex;align-items:center;gap:10px}.brand img{width:42px;height:42px;object-fit:contain}.brand small,.brand strong{display:block}.brand small{font-size:11px;letter-spacing:2px;color:#81978a}.brand strong{font-size:21px}header>span{font-size:12px;color:#84918c}main{max-width:580px;margin:auto;padding:26px 18px 60px}h1{font-size:25px;margin:8px 0}p{color:#6c7d82;line-height:1.5}#acesso,.cartao{border:1px solid #e5e7e4;background:white;border-radius:18px;padding:22px;box-shadow:0 4px 18px #2139470b}label{display:block;margin:16px 0;font-size:13px;font-weight:600}input{display:block;width:100%;margin-top:7px;padding:13px;border:1px solid #d6dedb;border-radius:10px;font-size:16px}button{border:0;background:#405e6b;color:#fff;border-radius:11px;padding:12px 18px;font-weight:650;cursor:pointer;margin-top:12px}.secundario{background:#e4ede8;color:#30475a}.link{background:transparent;color:#405e6b}.lista{display:grid;gap:15px;margin:22px 0}.cartao h2{font-size:19px;margin:0 0 5px}.cartao .estabelecimento{font-size:13px;color:#667f76;margin:0 0 13px}.progress{height:10px;background:#e4ebe8;border-radius:20px;overflow:hidden;margin:17px 0 7px}.progress span{display:block;height:100%;background:#85a18e;border-radius:20px}.cartao .premio{color:#405e6b;font-weight:600}#mensagem{min-height:1.5em}footer{text-align:center;color:#9aa7a3;font-size:12px;padding:20px}
+:root{font-family:var(--font);color:var(--ink);background:var(--paper)}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font)}header{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:16px 22px;border-bottom:1px solid var(--border)}.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}.brand img{width:42px;height:42px;object-fit:contain}.brand small,.brand strong{display:block}.brand small{font-size:11px;letter-spacing:2px;color:#62826b}.brand strong{font-size:21px;color:var(--brand)}header>span,header>a{font-size:12px;color:var(--muted)}main{max-width:580px;margin:auto;padding:26px 18px 60px}h1{font-size:25px;margin:8px 0;color:var(--ink)}p{color:var(--muted);line-height:1.5}#acesso,.cartao{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:22px;box-shadow:0 4px 18px #2139470b}label{display:block;margin:16px 0;font-size:13px;font-weight:600;color:var(--ink)}input{display:block;width:100%;margin-top:7px;padding:13px;border:1px solid var(--border);border-radius:10px;font-size:16px;color:var(--ink)}button{border:0;background:var(--brand);color:#fff;border-radius:11px;padding:12px 18px;font-weight:650;cursor:pointer;margin-top:12px}.secundario{background:#eaf1e8;color:var(--ink)}.link{background:transparent;color:var(--brand)}.lista{display:grid;gap:15px;margin:22px 0}.cartao h2{font-size:19px;margin:0 0 5px}.cartao .estabelecimento{font-size:13px;color:#667f76;margin:0 0 13px}.progress{height:10px;background:#e4ebe8;border-radius:20px;overflow:hidden;margin:17px 0 7px}.progress span{display:block;height:100%;background:#85a18e;border-radius:20px}.cartao .premio{color:#405e6b;font-weight:600}#mensagem{min-height:1.5em}footer{text-align:center;color:#9aa7a3;font-size:12px;padding:20px}
 /* Cartão de fidelidade personalizado por estabelecimento */
 .cartao-fidelidade{background:var(--cor-cartao,#30475a);color:#fff;border:0;box-shadow:0 10px 26px #1a2e3b2b;padding:24px;}
 .cartao-fidelidade h2,.cartao-fidelidade .premio,.cartao-fidelidade .estabelecimento,.cartao-fidelidade .cartao-status{color:#fff;}
@@ -40,4 +40,26 @@ select{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d6
 .cartao-fidelidade .luvi-premio-faixa-v0893 p{color:#35684a!important;font-size:13px;line-height:1.5;margin:5px 0 0}
 .cartao-fidelidade .luvi-premio-icone-v0893{width:42px;height:42px;flex-shrink:0;border-radius:50%;background:#cbe7d1;color:#28633d;display:grid;place-items:center;font-size:22px}
 .cartao-fidelidade .luvi-premio-faixa-v0893.resgatada{background:#e9ecef;color:#475569}
-.cartao-fidelidade .luvi-premio-faixa-v0893.resgatada strong,.cartao-fidelidade .luvi-premio-faixa-v0893.resgatada p{color:#475569!important}
+.qr-cliente{display:block;width:168px;height:168px;margin-top:16px;background:#fff;border-radius:12px;object-fit:contain}
+
+.conta-topo{display:flex;align-items:center;gap:8px;min-width:0}
+.conta-topo[hidden]{display:none}
+#nome-cliente{font-size:15px;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.conta-topo .link{margin:0;padding:8px 10px;font-size:14px}
+.rodape-acoes{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -6px 18px #1d3e5b12;padding:6px 10px calc(6px + env(safe-area-inset-bottom))}
+.rodape-acoes[hidden]{display:none}
+.rodape-acoes button{flex:1;margin:0;min-height:56px;background:transparent;color:var(--brand);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:650;padding:6px 4px}
+.rodape-acoes button:hover{background:var(--brand-soft)}
+.rodape-acoes svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.carteira-aberta main{padding-bottom:112px}
+#painel-qr{border:1px solid var(--border);border-radius:var(--radius);background:var(--paper);color:var(--ink);width:min(420px,calc(100% - 28px));max-height:min(82vh,720px);overflow:auto;padding:18px 18px 22px;box-shadow:0 12px 40px #1d3e5b33}
+#painel-qr::backdrop{background:#1d3e5bcc}
+.qr-cabeca{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qr-cabeca h2{margin:0;font-size:20px;color:var(--ink)}
+#fechar-qr{margin:0;padding:8px 10px}
+.qr-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:14px}
+.qr-item h3{margin:0 0 4px;font-size:16px;color:var(--ink)}
+.qr-item p{margin:0 0 8px}
+.qr-item .qr-cliente{margin:8px auto 0}
+.qr-extra{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+@media(max-width:420px){header{padding:12px 14px}#nome-cliente{font-size:14px;max-width:40vw}main{padding-left:14px;padding-right:14px}}

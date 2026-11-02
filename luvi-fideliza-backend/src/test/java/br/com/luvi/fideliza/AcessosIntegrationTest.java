@@ -91,7 +91,8 @@ class AcessosIntegrationTest {
     assertNotNull(session);
     mvc.perform(get("/api/v1/auth/me").session(session))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.email").value("dono@teste.local"));
+        .andExpect(jsonPath("$.email").value("dono@teste.local"))
+        .andExpect(jsonPath("$.nome").value("Dono"));
     mvc.perform(post("/api/v1/auth/logout").session(session).with(csrf()))
         .andExpect(status().isNoContent());
     assertTrue(session.isInvalid());

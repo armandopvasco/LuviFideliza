@@ -21,6 +21,7 @@ function gerarUUIDSeguro() {
   const todos = seletor => [...document.querySelectorAll(seletor)];
   const state = { conta: null, negocios: [], negocio: null, direitos: {}, view: "inicio", busy: false,
     pessoa: null, programa: undefined, dirty: false, detalhe: "beneficios", busca: "", clientes: [],
+    campanhasRapidas: [], recompensaDestaque: null,
     paginas: { clientes: 0, recompensas: 0, cartoes: 0, historico: 0, beneficios: 0 }, totais: {} };
   const tamanho = tipo => tipo === "clientes" ? 10 : tipo === "recompensas" ? 12 : 6;
   const raiz = () => "/api/v1/estabelecimentos/" + encodeURIComponent(state.negocio.id);
@@ -56,7 +57,7 @@ function gerarUUIDSeguro() {
     let dados = null; const body = await r.text(); try { dados = body ? JSON.parse(body) : null; } catch {}
     if (!r.ok) {
       if (r.status === 401) sairDaTela();
-      const mensagem = dados?.mensagem || (r.status === 401 ? "Entre novamente. Confira o e-mail e a senha." : r.status === 403 ? "Seu acesso não permite esta ação. Atualize o painel para conferir as permissões." : "Não foi possível concluir a operação. Código " + r.status + ".");
+      const mensagem = dados?.mensagem || (r.status === 401 ? "Entre novamente. Confira o e-mail ou WhatsApp e a senha." : r.status === 403 ? "Seu acesso não permite esta ação. Atualize o painel para conferir as permissões." : "Não foi possível concluir a operação. Código " + r.status + ".");
       const erro = new Error(mensagem + (dados?.campos?.length ? " Confira: " + dados.campos.join(", ") + "." : "")); erro.status = r.status; throw erro;
     }
     return dados;
@@ -98,7 +99,12 @@ function gerarUUIDSeguro() {
     $("nav-equipe").hidden = !dono();
     for (const id of ["novo-cliente", "nome-cliente", "cadastrar-cliente", "carimbar"]) $(id).disabled = state.busy || !operar();
     $("form-carimbo").hidden = !operar();
-    $("gerar-convite").disabled = state.busy || !operar() || !state.pessoa || state.pessoa.vinculadoAoCliente;
+    const gerar = $("gerar-convite");
+    const podeConvidar = !!state.pessoa && !state.pessoa.vinculadoAoCliente && operar();
+    gerar.hidden = !podeConvidar;
+    gerar.disabled = state.busy || !podeConvidar;
+    const rapido = $("carimbar-rapido");
+    if (rapido) rapido.disabled = state.busy || !operar();
     todos("[data-resgatar]").forEach(b => b.disabled = state.busy || !operar());
     for (const id of ["programa-titulo", "programa-meta", "programa-recompensa", "programa-criterios", "salvar-programa"]) $(id).disabled = state.busy || !dono() || state.programa === undefined;
     $("equipe-email").disabled = state.busy || !dono();
@@ -128,20 +134,34 @@ function gerarUUIDSeguro() {
     if (!state.negocio) return;
     if (view === "campanhas") { const frame=$("campanhas-frame"); const url="/campanhas.html?embedded=1&estabelecimento="+encodeURIComponent(state.negocio.id || $("estabelecimento").value); if(frame.getAttribute("src")!==url)frame.setAttribute("src",url); }
     if (view === "inicio") await carregarInicio();
-    if (view === "atendimento") { /* Ações rápidas utilizam os fluxos existentes. */ }
+    if (view === "atendimento") await prepararAtendimento();
     if (view === "clientes") await carregarClientes();
     if (view === "recompensas") await carregarRecompensas();
     if (view === "programa" && state.programa === undefined) await carregarPrograma();
     if (view === "equipe") await carregarEquipe();
   }
+  async function encerrarSessao() {
+    try { await api("/api/v1/auth/logout", { method: "POST" }); }
+    catch { /* a sessão pode já ter sido encerrada */ }
+  }
   async function iniciar() {
     state.conta = await api("/api/v1/auth/me");
+    const perfis = state.conta.perfis || [];
+    if (!perfis.includes("ROLE_OPERADOR") && !perfis.includes("ROLE_ADMIN")) {
+      await encerrarSessao();
+      sairDaTela();
+      notificar("Esta conta é de cliente. O painel é da barbearia.", true, "login-aviso");
+      return;
+    }
     state.negocios = await api("/api/v1/painel/estabelecimentos");
     $("conta").textContent = state.conta.email;
     $("link-admin").hidden = !state.conta.perfis.includes("ROLE_ADMIN");
     $("estabelecimento").replaceChildren(...state.negocios.map(n => new Option(n.nome, n.id)));
+    const q = new URLSearchParams(location.search);
+    if (q.get("loja") && [...$("estabelecimento").options].some(o => o.value === q.get("loja"))) $("estabelecimento").value = q.get("loja");
     $("login").hidden = true; $("app").hidden = false;
     await trocarNegocio();
+    if ((q.get("participacao") || q.get("recompensa")) && state.negocio) await abrirAtalho(q);
   }
   async function trocarNegocio() {
     state.negocio = state.negocios.find(n => n.id === $("estabelecimento").value) || null;
@@ -189,6 +209,48 @@ function gerarUUIDSeguro() {
     $("cliente-nome").textContent = state.pessoa.nomeExibicao;
     $("cliente-avatar").textContent = iniciais(state.pessoa.nomeExibicao);
     $("cliente-vinculo").textContent = state.pessoa.vinculadoAoCliente ? "Conta vinculada" : "Ainda sem conta vinculada";
+    const contato = $("cliente-whatsapp");
+    if (contato) contato.value = state.pessoa.whatsapp || "";
+    const qr = $("qr-cliente");
+    if (qr) qr.src = pessoaRaiz() + "/qrcode";
+  }
+  async function prepararAtendimento() {
+    const area = $("campanhas-rapido");
+    if (!area) return;
+    area.replaceChildren();
+    const campanhas = await api(raiz() + "/campanhas");
+    state.campanhasRapidas = campanhas.filter(c => c.ativa);
+    const unica = $("campanha-unica");
+    if (state.campanhasRapidas.length <= 1) {
+      area.hidden = true;
+      unica.hidden = state.campanhasRapidas.length !== 1;
+      unica.textContent = state.campanhasRapidas.length === 1 ? "Campanha: " + state.campanhasRapidas[0].titulo : "Nenhuma campanha ativa. O proprietário precisa ativar um programa.";
+      return;
+    }
+    unica.hidden = true;
+    area.hidden = false;
+    state.campanhasRapidas.forEach(c => {
+      const linha = texto("label", "", "campanha-opcao");
+      const check = document.createElement("input");
+      check.type = "checkbox"; check.value = c.id; check.checked = !!c.principal;
+      linha.append(check, texto("span", c.titulo + (c.principal ? " · principal" : "")));
+      area.append(linha);
+    });
+  }
+  async function abrirAtalho(q) {
+    if (q.get("participacao")) {
+      await navegar("clientes");
+      const pessoa = await api(raiz() + "/participantes/" + encodeURIComponent(q.get("participacao")));
+      await selecionar(pessoa);
+      $("form-carimbo").scrollIntoView({ block: "center" });
+      notificar("Cliente localizado pelo QR. Confira o cartão e registre o carimbo.", false, "clientes-aviso");
+      return;
+    }
+    if (q.get("recompensa")) {
+      state.recompensaDestaque = q.get("recompensa");
+      await navegar("recompensas");
+      notificar("Recompensa localizada pelo QR. Confirme a entrega se ela ainda estiver disponível.", false, "recompensas-aviso");
+    }
   }
   async function restaurarCarimbo() {
     const area = $("campanhas-atendimento");
@@ -270,12 +332,16 @@ function gerarUUIDSeguro() {
     $("lista-recompensas").replaceChildren(); paginar("recompensas", dados);
     if (!dados.conteudo.length) vazio("lista-recompensas", "Nenhuma recompensa neste filtro. Cada cartão completo abre uma nova conquista.");
     dados.conteudo.forEach(r => {
-      const card = texto("article", "", "reward-tile"), top = texto("div", "", "reward-head"); top.append(statusBadge(r.status === "DISPONIVEL" ? "Disponível" : "Resgatada", r.status === "DISPONIVEL"), texto("small", "Ciclo " + r.ciclo, "muted"));
+      const card = texto("article", "", "reward-tile"); card.dataset.recompensa = r.id; const top = texto("div", "", "reward-head"); top.append(statusBadge(r.status === "DISPONIVEL" ? "Disponível" : "Resgatada", r.status === "DISPONIVEL"), texto("small", "Ciclo " + r.ciclo, "muted"));
       card.append(top, texto("h3", r.descricao), texto("p", r.participante), texto("p", r.resgatadaEm ? "Entregue em " + formatar(r.resgatadaEm) + (r.entreguePor ? " por " + r.entreguePor : "") : "Conquistada em " + formatar(r.emitidaEm)));
       const acoes = texto("div", "", "reward-actions"), ver = texto("button", "Ver cliente →", "text-button");
       ver.onclick = () => executar(async () => { await navegar("clientes"); await selecionar({ id: r.participacaoId, nomeExibicao: r.participante, vinculadoAoCliente: false }); await atualizarIdentidadeSelecionada(); }, "clientes-aviso"); acoes.append(ver);
       if (r.status === "DISPONIVEL" && operar()) acoes.append(botaoResgate(r, "recompensas-aviso")); card.append(acoes); $("lista-recompensas").append(card);
     });
+    if (state.recompensaDestaque) {
+      const alvo = document.querySelector('[data-recompensa="' + state.recompensaDestaque + '"]');
+      if (alvo) { alvo.classList.add("client-row"); alvo.scrollIntoView({ block: "center" }); }
+    }
   }
   async function atualizarIdentidadeSelecionada() {
     // Consulta pontual evita inferir o vínculo de um participante fora da página de clientes.
@@ -370,6 +436,33 @@ function gerarUUIDSeguro() {
     try { await carregarClientes(); await selecionar(salvo.participante); notificar("Cliente cadastrado e primeiro cartão aberto.", false, "clientes-aviso"); }
     catch (e) { notificar("Cadastro confirmado. Atualize a consulta para ver o cliente. " + e.message, true, "lista-aviso"); }
   }, "cadastro-aviso"); };
+  $("form-rapido").onsubmit = e => { e.preventDefault(); executar(async () => {
+    if (!operar()) throw new Error("Seu acesso não permite registrar carimbos.");
+    const whatsapp = $("whatsapp-rapido").value.replace(/\D/g, "");
+    if (!/^(?:55)?[1-9][0-9]9[0-9]{8}$/.test(whatsapp)) throw new Error("Informe um celular com DDD válido.");
+    const nomeBox = $("nome-rapido-box");
+    const nome = $("nome-rapido").value.trim();
+    if (nomeBox.hidden) $("nome-rapido").required = false;
+    else if (!nome) { $("nome-rapido").focus(); throw new Error("Informe o nome do cliente."); }
+    const selecionadas = (state.campanhasRapidas || []).length <= 1
+      ? (state.campanhasRapidas || []).map(c => c.id)
+      : [...$("campanhas-rapido").querySelectorAll("input:checked")].map(c => c.value);
+    if (!selecionadas.length) throw new Error((state.campanhasRapidas || []).length ? "Selecione pelo menos uma campanha." : "Nenhuma campanha ativa.");
+    const anterior = lerPendente("rapido", whatsapp);
+    const op = anterior || pendente("rapido", { whatsapp, nome, campanhas: selecionadas }, whatsapp);
+    try {
+      const salvo = await api(raiz() + "/atendimento-rapido", json({ whatsapp, nome: nome || null, campanhas: selecionadas }, "POST", op.chave));
+      concluirPendente("rapido", whatsapp);
+      $("nome-rapido").required = false; $("nome-rapido-box").hidden = true; $("nome-rapido").value = ""; $("whatsapp-rapido").value = "";
+      notificar((salvo.cadastrado ? "Cliente cadastrado. " : "") + "Carimbo registrado.", false, "rapido-aviso");
+    } catch (err) {
+      if ((err.message || "").includes("Informe o nome") || (err.message || "").includes("Primeira visita")) {
+        $("nome-rapido").required = false; $("nome-rapido-box").hidden = false; $("nome-rapido").focus();
+        throw new Error("Primeira visita. Informe o nome para abrir o cartão e carimbar.");
+      }
+      throw err;
+    }
+  }, "rapido-aviso"); };
   $("form-carimbo").onsubmit = e => { e.preventDefault(); executar(async () => {
     const selecionadas = [...$("campanhas-atendimento").querySelectorAll("input:checked")].map(c => c.value);
     const existente = lerPendente("atendimento", state.pessoa.id);

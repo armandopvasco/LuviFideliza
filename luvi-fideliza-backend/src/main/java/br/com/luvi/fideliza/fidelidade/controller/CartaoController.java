@@ -66,6 +66,18 @@ public class CartaoController {
     return service.cartoes(id, participacao, pagina, tamanho, usuario.getName());
   }
 
+  @PostMapping("/api/v1/estabelecimentos/{id}/atendimento-rapido")
+  public ResponseEntity<AtendimentoRapido> atendimentoRapido(
+      @PathVariable UUID id,
+      @RequestHeader("Idempotency-Key") UUID chave,
+      @Valid @RequestBody PedidoAtendimento dados,
+      Authentication usuario) {
+    AtendimentoRapido resultado =
+        service.atenderPorWhatsapp(
+            id, chave, dados.whatsapp(), dados.nome(), dados.campanhas(), usuario.getName());
+    return ResponseEntity.status(resultado.cadastrado() ? 201 : 200).body(resultado);
+  }
+
   @PostMapping("/api/v1/estabelecimentos/{id}/participantes/{participacao}/carimbos")
   public ResponseEntity<Carimbo> creditar(
       @PathVariable UUID id,

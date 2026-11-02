@@ -12,7 +12,6 @@ import br.com.luvi.fideliza.usuario.*;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.domain.*;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -159,11 +158,7 @@ public class RecompensaService {
             int tamanho,
             String email) {
 
-        Usuario usuario = usuarios
-                .findByEmailIgnoreCase(email)
-                .filter(Usuario::getAtivo)
-                .orElseThrow(() -> new AccessDeniedException(
-                        "Acesso negado"));
+        Usuario usuario = permissoes.usuarioAtivo(email);
 
         Page<Recompensa> resultado = recompensas.doCliente(
                 usuario.getId(), paginacao(pagina, tamanho));
