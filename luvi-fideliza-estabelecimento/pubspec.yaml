@@ -12,6 +12,7 @@ dependencies:
   http: ^1.2.2
   shared_preferences: ^2.3.3
   mobile_scanner: ^6.0.2
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:

@@ -38,6 +38,8 @@ abstract class LuviApi {
   });
   Future<void> aderir(String lojaId);
   Future<List<CartaoCliente>> cartoes();
+  Future<VisualCartao> visual(String lojaId);
+  Future<List<int>?> fundo(String lojaId);
   Future<List<RecompensaCliente>> recompensas();
   Future<String> urlQrParticipacao(String participacaoId);
   Future<String> urlQrRecompensa(String recompensaId);
@@ -78,6 +80,12 @@ class ApiMemoria implements LuviApi {
 
   @override
   Future<List<CartaoCliente>> cartoes() async => cartoesFixos;
+
+  @override
+  Future<VisualCartao> visual(String lojaId) async => const VisualCartao(icone: 'tesoura');
+
+  @override
+  Future<List<int>?> fundo(String lojaId) async => null;
 
   @override
   Future<void> entrar(String identificador, String senha) async {

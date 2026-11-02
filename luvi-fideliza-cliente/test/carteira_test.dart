@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:luvi_fideliza_cliente/api.dart';
 import 'package:luvi_fideliza_cliente/app.dart';
+import 'package:luvi_fideliza_cliente/biometria.dart';
 import 'package:luvi_fideliza_cliente/modelos.dart';
 
 void main() {
@@ -26,6 +27,9 @@ void main() {
     expect(find.text('Cliente teste'), findsOneWidget);
     expect(find.text('Cortes'), findsOneWidget);
     expect(find.text('2 de 5 carimbos'), findsOneWidget);
+    expect(find.text('✂'), findsWidgets);
+    expect(find.byIcon(Icons.logout), findsOneWidget);
+    expect(find.text('Sair'), findsNothing);
     expect(find.text('Mostrar QR'), findsNothing);
     await tester.tap(find.text('QR Code'));
     await tester.pumpAndSettle();
@@ -42,6 +46,21 @@ void main() {
     await tester.tap(find.text('Escanear QR da loja'));
     await tester.pumpAndSettle();
     expect(api.loja, '98b293a1-5b28-4cb3-9bf2-ba65ba5ce682');
+    expect(find.text('Cortes'), findsOneWidget);
+  });
+
+  testWidgets('biometria trava a carteira até confirmar', (tester) async {
+    final api = ApiMemoria(sessao: SessaoMemoria())..dentro = true;
+    await api.sessao!.salvar('token-teste');
+    await api.sessao!.salvarNome('Cliente teste');
+    final bio = BiometriaMemoria(pode: true, ligada: true, aceita: false);
+    await tester.pumpWidget(LuviApp(api: api, biometria: bio));
+    await tester.pumpAndSettle();
+    expect(find.text('Cortes'), findsNothing);
+    expect(find.text('Usar biometria'), findsOneWidget);
+    bio.aceita = true;
+    await tester.tap(find.text('Usar biometria'));
+    await tester.pumpAndSettle();
     expect(find.text('Cortes'), findsOneWidget);
   });
 }

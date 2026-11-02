@@ -10,6 +10,8 @@
 	<string>LUVI Balcão</string>
 	<key>NSCameraUsageDescription</key>
 	<string>A câmera lê o QR do cliente para abrir o cartão e o QR da recompensa para confirmar a entrega.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>O Face ID abre o aplicativo sem digitar a senha.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

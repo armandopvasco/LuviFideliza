@@ -1,15 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../biometria.dart';
 import '../modelos.dart';
+import '../tema.dart';
 import 'aderir.dart';
+import 'cartao_visual.dart';
 import 'qr_tela.dart';
+import 'trava.dart';
 
 class CarteiraPage extends StatefulWidget {
-  const CarteiraPage({super.key, required this.api, required this.aoSair, this.escanear});
+  const CarteiraPage({super.key, required this.api, required this.aoSair, required this.biometria, this.escanear});
 
   final LuviApi api;
   final Future<void> Function() aoSair;
+  final Biometria biometria;
   final Future<String?> Function(BuildContext context)? escanear;
 
   @override
@@ -19,6 +26,8 @@ class CarteiraPage extends StatefulWidget {
 class _CarteiraPageState extends State<CarteiraPage> {
   List<CartaoCliente> _cartoes = const [];
   List<RecompensaCliente> _premios = const [];
+  Map<String, VisualCartao> _visuais = const {};
+  Map<String, Uint8List> _fotos = const {};
   String? _aviso;
   bool _carregando = true;
 
@@ -33,8 +42,23 @@ class _CarteiraPageState extends State<CarteiraPage> {
     try {
       final cartoes = await widget.api.cartoes();
       final premios = await widget.api.recompensas();
+      final visuais = <String, VisualCartao>{};
+      final fotos = <String, Uint8List>{};
+      for (final cartao in cartoes) {
+        if (visuais.containsKey(cartao.estabelecimentoId)) continue;
+        try {
+          final visual = await widget.api.visual(cartao.estabelecimentoId);
+          visuais[cartao.estabelecimentoId] = visual;
+          if (visual.temFoto) {
+            final bytes = await widget.api.fundo(cartao.estabelecimentoId);
+            if (bytes != null) fotos[cartao.estabelecimentoId] = Uint8List.fromList(bytes);
+          }
+        } catch (_) {
+          visuais[cartao.estabelecimentoId] = VisualCartao.padrao;
+        }
+      }
       if (!mounted) return;
-      setState(() { _cartoes = cartoes; _premios = premios; _aviso = null; });
+      setState(() { _cartoes = cartoes; _premios = premios; _visuais = visuais; _fotos = fotos; _aviso = null; });
     } catch (erro) {
       if (!mounted) return;
       setState(() => _aviso = '$erro'.replaceFirst('Exception: ', ''));
@@ -105,7 +129,8 @@ class _CarteiraPageState extends State<CarteiraPage> {
       appBar: AppBar(
         title: Text(nome),
         actions: [
-          TextButton(onPressed: widget.aoSair, child: const Text('Sair')),
+          BotaoBiometria(biometria: widget.biometria),
+          BotaoSair(aoSair: widget.aoSair),
         ],
       ),
       body: _carregando
@@ -119,12 +144,18 @@ class _CarteiraPageState extends State<CarteiraPage> {
                     padding: EdgeInsets.symmetric(vertical: 24),
                     child: Text('Você ainda não tem cartões. Participe de uma loja pelo QR do balcão.'),
                   ),
-                for (final cartao in _cartoes) _CartaoTile(cartao: cartao),
+                for (final cartao in _cartoes)
+                  CartaoVisual(
+                    cartao: cartao,
+                    visual: _visuais[cartao.estabelecimentoId] ?? VisualCartao.padrao,
+                    foto: _fotos[cartao.estabelecimentoId],
+                    premioDisponivel: _premioDe(cartao) != null,
+                  ),
               ],
             ),
       bottomNavigationBar: Material(
         elevation: 8,
-        color: Colors.white,
+        color: const Color(0xFFF7FBFD),
         child: SafeArea(
           child: SizedBox(
             height: 72,
@@ -167,31 +198,3 @@ class _AcaoRodape extends StatelessWidget {
   }
 }
 
-class _CartaoTile extends StatelessWidget {
-  const _CartaoTile({required this.cartao});
-
-  final CartaoCliente cartao;
-
-  @override
-  Widget build(BuildContext context) {
-    final progresso = cartao.meta == 0 ? 0.0 : (cartao.saldo / cartao.meta).clamp(0, 1).toDouble();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(cartao.estabelecimento, style: Theme.of(context).textTheme.labelMedium),
-            Text(cartao.titulo, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: progresso),
-            const SizedBox(height: 8),
-            Text('${cartao.saldo} de ${cartao.meta} carimbos'),
-            Text(cartao.recompensa),
-          ],
-        ),
-      ),
-    );
-  }
-}

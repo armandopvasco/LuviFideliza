@@ -1,3 +1,19 @@
+class VisualCartao {
+  const VisualCartao({
+    this.corCartao = '#30475A',
+    this.corCarimbo = '#87A18F',
+    this.icone = 'estrela',
+    this.temFoto = false,
+  });
+
+  final String corCartao;
+  final String corCarimbo;
+  final String icone;
+  final bool temFoto;
+
+  static const padrao = VisualCartao();
+}
+
 class CartaoCliente {
   const CartaoCliente({
     required this.id,

@@ -81,6 +81,28 @@ class LuviHttp implements LuviApi {
   }
 
   @override
+  Future<VisualCartao> visual(String lojaId) async {
+    final dados = await _enviar('GET', '/api/v1/estabelecimentos/$lojaId/visual-cartao', null);
+    return VisualCartao(
+      corCartao: '${dados['corCartao'] ?? '#30475A'}',
+      corCarimbo: '${dados['corCarimbo'] ?? '#87A18F'}',
+      icone: '${dados['iconeCarimbo'] ?? 'estrela'}',
+      temFoto: dados['fotoFundoCartao'] == true,
+    );
+  }
+
+  @override
+  Future<List<int>?> fundo(String lojaId) async {
+    final uri = Uri.parse('$_raiz/api/v1/estabelecimentos/$lojaId/fundo-cartao');
+    final resposta = await cliente.get(uri, headers: {
+      'X-Luvi-App': '1',
+      if (_token != null) 'Authorization': 'Bearer $_token',
+    });
+    if (resposta.statusCode != 200 || resposta.bodyBytes.isEmpty) return null;
+    return resposta.bodyBytes;
+  }
+
+  @override
   Future<List<RecompensaCliente>> recompensas() async {
     final dados = await _enviar('GET', '/api/v1/me/recompensas?tamanho=100', null);
     final lista = (dados['conteudo'] as List?) ?? const [];

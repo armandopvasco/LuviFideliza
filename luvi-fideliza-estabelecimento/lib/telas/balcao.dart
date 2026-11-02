@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../biometria.dart';
 import '../modelos.dart';
+import '../tema.dart';
 import 'confirmar.dart';
-import 'entrar.dart';
 import 'escanear.dart';
 import 'qr_loja.dart';
 import 'recompensa.dart';
+import 'trava.dart';
 import 'whatsapp.dart';
 
 class BalcaoPage extends StatefulWidget {
-  const BalcaoPage({super.key, required this.api, required this.aoSair, this.escanear});
+  const BalcaoPage({super.key, required this.api, required this.aoSair, required this.biometria, this.escanear});
 
   final BalcaoApi api;
   final Future<void> Function() aoSair;
+  final Biometria biometria;
   final Future<String?> Function(BuildContext context)? escanear;
 
   @override
@@ -80,7 +83,8 @@ class _BalcaoPageState extends State<BalcaoPage> {
       appBar: AppBar(
         title: Text(widget.api.nome.isEmpty ? 'Balcão' : widget.api.nome),
         actions: [
-          TextButton(onPressed: widget.aoSair, child: const Text('Sair')),
+          BotaoBiometria(biometria: widget.biometria),
+          BotaoSair(aoSair: widget.aoSair),
         ],
       ),
       body: SafeArea(

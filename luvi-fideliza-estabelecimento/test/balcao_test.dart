@@ -44,7 +44,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Atendente'), findsOneWidget);
-    expect(find.text('Sair'), findsOneWidget);
+    expect(find.byIcon(Icons.logout), findsOneWidget);
+    expect(find.text('Sair'), findsNothing);
     expect(find.text('Barbearia Piloto'), findsOneWidget);
     await tester.tap(find.text('Ler QR'));
     await tester.pumpAndSettle();

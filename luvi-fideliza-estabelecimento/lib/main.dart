@@ -1,11 +1,15 @@
 import 'package:flutter/widgets.dart';
 
 import 'app.dart';
+import 'biometria_celular.dart';
 import 'http_api.dart';
 import 'sessao_preferencias.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const base = String.fromEnvironment('API_BASE', defaultValue: 'http://localhost:8081');
-  runApp(BalcaoApp(api: LuviBalcaoHttp(base: base, sessao: SessaoPreferencias())));
+  runApp(BalcaoApp(
+    api: LuviBalcaoHttp(base: base, sessao: SessaoPreferencias()),
+    biometria: BiometriaCelular(),
+  ));
 }
