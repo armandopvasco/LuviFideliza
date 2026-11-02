@@ -22,7 +22,9 @@ Abra o `pom.xml` no IntelliJ, selecione JDK 17 e configure:
 
 Execute `LuviFidelizaApplication`. A porta padrão é 8081. O painel fica em `http://localhost:8081/painel.html`.
 
-Se a subida parar com `Migration checksum mismatch` nas versões 1 a 7, o banco foi criado com um texto antigo desses scripts. Os arquivos atuais do repositório é que valem. Na configuração de execução do IntelliJ, defina `LUVI_FLYWAY_REPAIR=true`, suba uma vez e depois remova a variável. Isso só atualiza o histórico do Flyway e aplica o que ainda estiver pendente. Não reexecuta script já aplicado e não apaga cadastro.
+Se a subida parar com `Migration checksum mismatch` nas versões 1 a 7, crie um banco novo e aponte `LUVI_FIDELIZA_DB_URL` para ele. O Flyway aplica os scripts atuais, da versão 1 até a 14. Para o primeiro administrador, use o perfil `local` com `LUVI_FIDELIZA_BOOTSTRAP_ENABLED=true`, `LUVI_FIDELIZA_ADMIN_EMAIL` e `LUVI_FIDELIZA_ADMIN_PASSWORD` (12 a 72 caracteres ASCII).
+
+`LUVI_FLYWAY_REPAIR=true` só entra quando o banco antigo precisa ser conservado. Suba uma vez com essa variável e depois remova. O reparo atualiza o histórico e não recria as tabelas.
 
 Para o QR apontar para um endereço que o celular alcança, defina `LUVI_PUBLIC_URL` (por exemplo `http://192.168.0.10:8081`). Sem essa variável, o QR usa o endereço do próprio pedido.
 
