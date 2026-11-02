@@ -41,3 +41,25 @@ select{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d6
 .cartao-fidelidade .luvi-premio-icone-v0893{width:42px;height:42px;flex-shrink:0;border-radius:50%;background:#cbe7d1;color:#28633d;display:grid;place-items:center;font-size:22px}
 .cartao-fidelidade .luvi-premio-faixa-v0893.resgatada{background:#e9ecef;color:#475569}
 .qr-cliente{display:block;width:168px;height:168px;margin-top:16px;background:#fff;border-radius:12px;object-fit:contain}
+
+.conta-topo{display:flex;align-items:center;gap:8px;min-width:0}
+.conta-topo[hidden]{display:none}
+#nome-cliente{font-size:15px;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.conta-topo .link{margin:0;padding:8px 10px;font-size:14px}
+.rodape-acoes{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -6px 18px #1d3e5b12;padding:6px 10px calc(6px + env(safe-area-inset-bottom))}
+.rodape-acoes[hidden]{display:none}
+.rodape-acoes button{flex:1;margin:0;min-height:56px;background:transparent;color:var(--brand);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:650;padding:6px 4px}
+.rodape-acoes button:hover{background:var(--brand-soft)}
+.rodape-acoes svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.carteira-aberta main{padding-bottom:112px}
+#painel-qr{border:1px solid var(--border);border-radius:var(--radius);background:var(--paper);color:var(--ink);width:min(420px,calc(100% - 28px));max-height:min(82vh,720px);overflow:auto;padding:18px 18px 22px;box-shadow:0 12px 40px #1d3e5b33}
+#painel-qr::backdrop{background:#1d3e5bcc}
+.qr-cabeca{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qr-cabeca h2{margin:0;font-size:20px;color:var(--ink)}
+#fechar-qr{margin:0;padding:8px 10px}
+.qr-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:14px}
+.qr-item h3{margin:0 0 4px;font-size:16px;color:var(--ink)}
+.qr-item p{margin:0 0 8px}
+.qr-item .qr-cliente{margin:8px auto 0}
+.qr-extra{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+@media(max-width:420px){header{padding:12px 14px}#nome-cliente{font-size:14px;max-width:40vw}main{padding-left:14px;padding-right:14px}}

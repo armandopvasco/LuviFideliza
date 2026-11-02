@@ -8,4 +8,6 @@
   --surface:#fff;
   --radius:13px;
   --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --erro:#a12b32;
 }
+.error{color:var(--erro)}

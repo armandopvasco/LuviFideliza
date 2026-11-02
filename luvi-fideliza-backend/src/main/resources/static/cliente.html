@@ -1,1 +1,62 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1d3e5b"><link rel="manifest" href="/cliente.webmanifest"><link rel="icon" href="/luvi-simbolo.png"><title>LUVI Fideliza+ | Meus cartões</title><link rel="stylesheet" href="/luvi-tokens.css"><link rel="stylesheet" href="/cliente.css?v=0900"><link rel="stylesheet" href="/cartao-recompensa.css?v=0900"></head><body><header><div class="brand"><img src="/luvi-simbolo.png" alt="LUVI"><div><small>LUVI</small><strong>Fideliza+</strong></div></div><span>Meus benefícios</span></header><main><section id="acesso"><h1>Entre para ver seus cartões</h1><p>Use a conta de cliente cadastrada no Fideliza+.</p><form id="login"><label>Telefone ou e-mail<input type="text" name="email" autocomplete="username" required></label><label>Senha<input type="password" name="senha" autocomplete="current-password" required></label><button>Entrar</button></form></section><section id="carteira" hidden><h1>Meus cartões</h1><p>Seus carimbos e recompensas, em um só lugar.</p><div id="cartoes" class="lista"></div><h2>Campanhas disponíveis</h2><div id="campanhas" class="lista"></div><button id="atualizar" class="secundario">Atualizar cartões</button><button id="sair" class="link">Sair</button></section><p id="mensagem" role="status"></p></main><footer>LUVI Fideliza+ · Versão inicial para testes</footer><script src="/cartao-personalizacao.js?v=0900"></script><script src="/cartao-recompensa.js?v=0900"></script><script src="/cliente.js?v=0900" defer></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1d3e5b">
+<link rel="manifest" href="/cliente.webmanifest">
+<link rel="icon" href="/luvi-simbolo.png">
+<title>LUVI Fideliza+ | Meus cartões</title>
+<link rel="stylesheet" href="/luvi-tokens.css?v=0902">
+<link rel="stylesheet" href="/cliente.css?v=0902">
+<link rel="stylesheet" href="/cartao-recompensa.css?v=0900">
+</head>
+<body>
+<header>
+  <div class="brand"><img src="/luvi-simbolo.png" alt="LUVI"><div><small>LUVI</small><strong>Fideliza+</strong></div></div>
+  <div id="conta-topo" class="conta-topo" hidden>
+    <span id="nome-cliente"></span>
+    <button type="button" id="sair" class="link">Sair</button>
+  </div>
+</header>
+<main>
+  <p id="mensagem" role="status"></p>
+  <section id="acesso">
+    <h1>Entre para ver seus cartões</h1>
+    <p>Use a conta de cliente cadastrada no Fideliza+.</p>
+    <form id="login">
+      <label>Telefone ou e-mail<input type="text" name="email" autocomplete="username" required></label>
+      <label>Senha<input type="password" name="senha" autocomplete="current-password" required></label>
+      <button>Entrar</button>
+    </form>
+  </section>
+  <section id="carteira" hidden>
+    <h1>Meus cartões</h1>
+    <p>Seus carimbos e recompensas, em um só lugar.</p>
+    <div id="cartoes" class="lista"></div>
+    <h2>Campanhas disponíveis</h2>
+    <div id="campanhas" class="lista"></div>
+  </section>
+</main>
+<footer id="rodape" class="rodape-acoes" hidden>
+  <button type="button" id="atualizar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.4-6"/><path d="M20.5 4.5V9h-4.5"/></svg>
+    <span>Atualizar</span>
+  </button>
+  <button type="button" id="abrir-qr">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><path d="M14 14h3v3h-3zM19 17.5h1.5V21H16v-1.5"/></svg>
+    <span>QR Code</span>
+  </button>
+</footer>
+<dialog id="painel-qr" aria-labelledby="painel-qr-titulo">
+  <div class="qr-cabeca">
+    <h2 id="painel-qr-titulo">QR Code</h2>
+    <button type="button" id="fechar-qr" class="link">Fechar</button>
+  </div>
+  <div id="lista-qr"></div>
+</dialog>
+<script src="/cartao-personalizacao.js?v=0900"></script>
+<script src="/cartao-recompensa.js?v=0900"></script>
+<script src="/cliente.js?v=0902" defer></script>
+</body>
+</html>

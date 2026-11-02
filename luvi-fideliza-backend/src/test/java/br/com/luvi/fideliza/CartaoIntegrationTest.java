@@ -337,6 +337,8 @@ class CartaoIntegrationTest {
                     (org.springframework.mock.web.MockHttpSession)
                         result.getRequest().getSession(false)))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.email").value("novo@teste.local"))
+        .andExpect(jsonPath("$.nome").value("Consumidor"))
         .andExpect(jsonPath("$.perfis[0]").value("ROLE_CLIENTE"));
     assertFalse(
         usuarios.findByEmailIgnoreCase("novo@teste.local").orElseThrow().getEmailVerificado());

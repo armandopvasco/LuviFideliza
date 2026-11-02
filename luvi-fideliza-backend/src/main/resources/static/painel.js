@@ -140,8 +140,19 @@ function gerarUUIDSeguro() {
     if (view === "programa" && state.programa === undefined) await carregarPrograma();
     if (view === "equipe") await carregarEquipe();
   }
+  async function encerrarSessao() {
+    try { await api("/api/v1/auth/logout", { method: "POST" }); }
+    catch { /* a sessão pode já ter sido encerrada */ }
+  }
   async function iniciar() {
     state.conta = await api("/api/v1/auth/me");
+    const perfis = state.conta.perfis || [];
+    if (!perfis.includes("ROLE_OPERADOR") && !perfis.includes("ROLE_ADMIN")) {
+      await encerrarSessao();
+      sairDaTela();
+      notificar("Esta conta é de cliente. O painel é da barbearia.", true, "login-aviso");
+      return;
+    }
     state.negocios = await api("/api/v1/painel/estabelecimentos");
     $("conta").textContent = state.conta.email;
     $("link-admin").hidden = !state.conta.perfis.includes("ROLE_ADMIN");

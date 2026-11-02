@@ -121,6 +121,7 @@ class ClienteAppIntegrationTest {
     mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.email").value(TELEFONE))
+        .andExpect(jsonPath("$.nome").value("Cliente"))
         .andExpect(jsonPath("$.perfis[0]").value("ROLE_OPERADOR"));
     mvc.perform(get("/api/v1/me/cartoes").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
